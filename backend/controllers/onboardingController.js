@@ -3,6 +3,16 @@ const onboardingService = require('../services/onboardingService');
 const OnboardingToken = require('../models/onboardingTokenModel');
 const nodemailer = require('nodemailer'); 
 
+const transporter = nodemailer.createTransport({
+  host: 'mailpit-xo4kkgwsoggko40g4cggkcg4', // or your Coolify service name
+  port: 1025,
+  secure: false, // no SSL/TLS
+  auth: {
+    user: '', // no auth needed
+    pass: ''
+  }
+});
+
 exports.onboardClient = async (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -28,19 +38,23 @@ exports.onboardClient = async (req, res) => {
 
 
 exports.sendOnboardingLink = async(req,res) => {
-    const clientEmail = req.body.email;
-    try {
-        const tokenDoc = await OnboardingToken.generateToken(clientEmail);
-        const token = tokenDoc.token;
 
-        // Step 2: Construct the secure URL
+    try {
+        const {email,roles,code} = req.body;
+        if(code !== process.env.CODE){
+            res.status(403).json({ error: 'Forbidden' });
+        }
+
+        const tokenDoc = await OnboardingToken.generateToken(email);
+        const token = tokenDoc.token;
+        
         const onboardingUrl = `http://localhost:3001/onboarding?token=${token}`;
         console.log('Generated Onboarding URL:', onboardingUrl);
         // Step 3: Send the email
         const transporter = nodemailer.createTransport({ /* your email service config */ });
         await transporter.sendMail({
             from: '"Yooqly"<no-reply@yooqly.com>',
-            to: clientEmail,
+            to: email,
             subject: 'Welcome! Complete Your Account Setup',
             html: `
                 <p>Welcome to our platform!</p>
@@ -50,9 +64,9 @@ exports.sendOnboardingLink = async(req,res) => {
             `,
         });
 
-        console.log(`Onboarding link sent to ${clientEmail}`);
+        console.log(`Onboarding link sent to ${email}`);
     } catch (error) {
-        console.error(`Failed to send onboarding link to ${clientEmail}:`, error);
+        console.error(`Failed to send onboarding link to ${email}:`, error);
         throw new Error('Could not send onboarding link.');
     }
 }

@@ -1,6 +1,8 @@
 const { validationResult } = require("express-validator");
 const authService = require("../services/authService");
 
+
+
 module.exports.login = async (req, res, next) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -19,3 +21,4 @@ module.exports.login = async (req, res, next) => {
         return res.status(401).json({ message: err.message });
     }
 };
+

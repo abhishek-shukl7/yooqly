@@ -19,4 +19,10 @@ router.post(
     onboardingController.onboardClient
 );
 
+router.post('/onboarding-client',[
+    body('email').isEmail().withMessage('Invalid Email'),
+    body('roles').isLength({min:1}).withMessage('Roles are required'),
+    body('code').isLength({min: 6}).withMessage('code is required')
+],onboardingController.sendOnboardingLink);
+
 module.exports = router;
