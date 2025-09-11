@@ -38,17 +38,15 @@ exports.onboardClient = async (req, res) => {
 
 
 exports.sendOnboardingLink = async(req,res) => {
-
+    const {email,roles,code} = req.body;
     try {
-        const {email,roles,code} = req.body;
         if(code !== process.env.CODE){
             res.status(403).json({ error: 'Forbidden' });
         }
-
-        const tokenDoc = await OnboardingToken.generateToken(email);
+        const tokenDoc = await OnboardingToken.generateToken(email,roles);
         const token = tokenDoc.token;
         
-        const onboardingUrl = `http://localhost:3001/onboarding?token=${token}`;
+        const onboardingUrl = `http://localhost:3001/api/onboarding?token=${token}`;
         console.log('Generated Onboarding URL:', onboardingUrl);
         // Step 3: Send the email
         const transporter = nodemailer.createTransport({ /* your email service config */ });

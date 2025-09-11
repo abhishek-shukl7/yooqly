@@ -22,10 +22,10 @@ const onboardingTokenSchema = new Schema({
     }
 }, { timestamps: true });
 
-onboardingTokenSchema.statics.generateToken = function(email) {
+onboardingTokenSchema.statics.generateToken = function(email,roles) {
     const token = crypto.randomBytes(32).toString('hex');
     const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); 
-    return this.create({ token, email, expiresAt });
+    return this.create({ token, email,roles, expiresAt });
 };
 
 const OnboardingToken = mongoose.model('OnboardingToken', onboardingTokenSchema);

@@ -11,8 +11,14 @@ module.exports.onboardClient = async (token, companyData, userData) => {
     if (!onboardingToken || onboardingToken.expiresAt < new Date()) {
         throw new Error('Invalid or expired onboarding token.');
     }
-
+    // console.log('onboardingToken ',onboardingToken);
     const email = onboardingToken.email;
+    let roles = onboardingToken.roles;
+    let superAdmin = false;
+    if(roles[0] == 'superadmin'){
+        superAdmin = true;
+        roles = [];
+    }
 
     const companyExists = await Company.findOne({ companyEmail: companyData.companyEmail });
     if (companyExists) {
@@ -23,13 +29,14 @@ module.exports.onboardClient = async (token, companyData, userData) => {
 
     const salt = await bcrypt.genSalt(10);
     const passwordHash = await bcrypt.hash(userData.password, salt);
+
     const newUser = await User.create({
         companyId: newCompany._id,
         name: userData.name,
         email: email,
         passwordHash,
-        role: [],
-        isSuperAdmin: true
+        role: roles,
+        isSuperAdmin: superAdmin
     });
     await OnboardingToken.findByIdAndDelete(onboardingToken._id);
 
