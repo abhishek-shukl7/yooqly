@@ -38,7 +38,7 @@ app.use('/api/quotes',quoteRoutes);
 app.use('/api/invoice',invoiceRoutes);
 
 app.use('/api/auth',authRoutes);
-app.use('/onboarding',onboardingRoutes);
+app.use('/api/onboarding',onboardingRoutes);
 
 app.listen(port,'0.0.0.0', () => {
   console.log(`Server is running on http://localhost:${port}`);

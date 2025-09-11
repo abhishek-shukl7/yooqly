@@ -4,7 +4,7 @@ const onboardingController = require('../controllers/onboardingController');
 
 const router = express.Router();
 
-router.post('/create-onboarding-token',onboardingController.sendOnboardingLink);
+// router.post('/create-onboarding-token',onboardingController.sendOnboardingLink);
 
 router.post(
     '/:token',
