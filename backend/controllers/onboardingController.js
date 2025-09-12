@@ -4,8 +4,8 @@ const OnboardingToken = require('../models/onboardingTokenModel');
 const nodemailer = require('nodemailer'); 
 
 const transporter = nodemailer.createTransport({
-  host: 'mailpit-xo4kkgwsoggko40g4cggkcg4', // or your Coolify service name
-  port: 1025,
+  host: 'mailpit-xo4kkgwsoggko40g4cggkcg4', // or your Coolify service name 
+  port: 8025,
   secure: false, // no SSL/TLS
   auth: {
     user: '', // no auth needed
@@ -51,7 +51,7 @@ exports.sendOnboardingLink = async(req,res) => {
         console.log('Generated Onboarding URL:', onboardingUrl);
         // Step 3: Send the email
         // const transporter = nodemailer.createTransport({ /* your email service config */ });
-        await transporter.sendMail({
+        const test = await transporter.sendMail({
             from: '"Yooqly"<no-reply@yooqly.com>',
             to: email,
             subject: 'Welcome! Complete Your Account Setup',
@@ -62,6 +62,7 @@ exports.sendOnboardingLink = async(req,res) => {
                 <p>This link will expire in 24 hours.</p>
             `,
         });
+        console.log('email send',test);
 
         console.log(`Onboarding link sent to ${email}`);
     } catch (error) {
