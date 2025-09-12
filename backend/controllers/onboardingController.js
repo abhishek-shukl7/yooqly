@@ -49,7 +49,7 @@ exports.sendOnboardingLink = async(req,res) => {
         const onboardingUrl = `http://localhost:3001/api/onboarding?token=${token}`;
         console.log('Generated Onboarding URL:', onboardingUrl);
         // Step 3: Send the email
-        const transporter = nodemailer.createTransport({ /* your email service config */ });
+        // const transporter = nodemailer.createTransport({ /* your email service config */ });
         await transporter.sendMail({
             from: '"Yooqly"<no-reply@yooqly.com>',
             to: email,
