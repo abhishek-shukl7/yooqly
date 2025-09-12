@@ -39,6 +39,7 @@ exports.onboardClient = async (req, res) => {
 
 exports.sendOnboardingLink = async(req,res) => {
     const {email,roles,code} = req.body;
+    console.log('req.body',req.body);
     try {
         if(code !== process.env.CODE){
             res.status(403).json({ error: 'Forbidden' });
