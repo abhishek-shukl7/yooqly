@@ -12,7 +12,7 @@ const jobSchema = new Schema({
     priority: { type: String ,enum: ['Low', 'Medium', 'High','Urgent'], default: 'Medium' },
     requirements: { type: String, required: true },
     comments: { type: String },
-    status: { type: String,enum: ['Pending', 'In Progress', 'Completed', 'On Hold', 'Cancelled'], default: 'Pending' },
+    status: { type: String,enum: ['Pending', 'In Production', 'Completed', 'On Hold', 'Cancelled'], default: 'Pending' },
     type: { type: String , required: true }
 }, { timestamps: true });
 

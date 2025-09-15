@@ -3,16 +3,6 @@ const onboardingService = require('../services/onboardingService');
 const OnboardingToken = require('../models/onboardingTokenModel');
 const nodemailer = require('nodemailer'); 
 
-const transporter = nodemailer.createTransport({
-  host: 'mailpit-xo4kkgwsoggko40g4cggkcg4', // or your Coolify service name 
-  port: 8025,
-  secure: false, // no SSL/TLS
-  auth: {
-    user: '', // no auth needed
-    pass: ''
-  }
-});
-
 exports.onboardClient = async (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -47,10 +37,18 @@ exports.sendOnboardingLink = async(req,res) => {
         const tokenDoc = await OnboardingToken.generateToken(email,roles);
         const token = tokenDoc.token;
         
-        const onboardingUrl = `http://localhost:3001/api/onboarding?token=${token}`;
+        const onboardingUrl = process.env.API_BASE_URL+`/api/onboarding?token=${token}`;
         console.log('Generated Onboarding URL:', onboardingUrl);
         // Step 3: Send the email
-        // const transporter = nodemailer.createTransport({ /* your email service config */ });
+        const transporter = nodemailer.createTransport({
+        host: 'mailpit-xo4kkgwsoggko40g4cggkcg4', // or your Coolify service name 
+        port: 1025,
+        secure: false, // no SSL/TLS
+        auth: {
+            user: '', // no auth needed
+            pass: ''
+        }
+        });
         const test = await transporter.sendMail({
             from: '"Yooqly"<no-reply@yooqly.com>',
             to: email,
