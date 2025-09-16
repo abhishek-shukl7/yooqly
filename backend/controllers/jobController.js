@@ -76,6 +76,16 @@ module.exports.getAllJobs = async (req, res) => {
     }
 };
 
+module.exports.getPorductionJobs = async (req, res) => {
+    try {
+        const jobs = await jobService.getPorductionJobs(req.user.company.companyId);
+        return res.status(200).json({ jobs });
+    } catch (err) {
+        console.error('Error fetching all orders:', err);
+        return res.status(500).json({ message: 'Internal Server Error' });
+    }
+};
+
 
 // module.exports.deleteJob = async (req, res) => {
 //     try {

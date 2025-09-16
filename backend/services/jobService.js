@@ -21,6 +21,10 @@ module.exports.getAllJobs= async (companyId) => {
     return await jobModel.find({companyId: companyId});
 };
 
+module.exports.getPorductionJobs= async (companyId) => {
+    return await jobModel.find({companyId: companyId,status: 'production'});
+};
+
 module.exports.getJobById = async (id) => {
     return await jobModel.findById(id);
 };
