@@ -37,11 +37,11 @@ exports.sendOnboardingLink = async(req,res) => {
         const tokenDoc = await OnboardingToken.generateToken(email,roles);
         const token = tokenDoc.token;
         
-        const onboardingUrl = process.env.API_BASE_URL+ `/api/onboarding?token=${token}`;
+        const onboardingUrl = process.env.API_BASE_URL+ `api/onboarding?token=${token}`;
         console.log('Generated Onboarding URL:', onboardingUrl);
-        // Step 3: Send the email
+
         const transporter = nodemailer.createTransport({
-        host: 'mailpit', // or your Coolify service name 
+        host: 'mailpit-xo4kkgwsoggko40g4cggkcg4',
         port: 1025,
         secure: false, 
         });

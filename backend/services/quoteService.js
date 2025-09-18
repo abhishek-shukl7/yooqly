@@ -16,11 +16,11 @@ module.exports.createQuote = async ({ companyId,userId,customerId,jobId,orderId,
 
 
 module.exports.getAllQuotes= async (companyId) => {
-    return await quoteModel.find({companyId:companyId});
+    return await quoteModel.find({companyId:companyId}).populate('customerId', 'customerName customerCompanyName');
 };
 
 module.exports.getQuoteById = async (id) => {
-    return await quoteModel.findById(id);
+    return await quoteModel.findById(id).populate('customerId', 'customerName customerCompanyName');
 };
 
 

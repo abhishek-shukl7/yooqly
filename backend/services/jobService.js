@@ -18,15 +18,15 @@ module.exports.createJob = async ({ companyId,customerId,quantity,userId ,type,d
 
 
 module.exports.getAllJobs= async (companyId) => {
-    return await jobModel.find({companyId: companyId});
+    return await jobModel.find({companyId: companyId}).populate('customerId', 'customerName customerCompanyName');
 };
 
 module.exports.getPorductionJobs= async (companyId) => {
-    return await jobModel.find({companyId: companyId,status: 'production'});
+    return await jobModel.find({companyId: companyId,status: 'production'}).populate('customerId', 'customerName customerCompanyName');
 };
 
 module.exports.getJobById = async (id) => {
-    return await jobModel.findById(id);
+    return await jobModel.findById(id).populate('customerId', 'customerName customerCompanyName');
 };
 
 module.exports.updateJob = async (id, updateData) => {
