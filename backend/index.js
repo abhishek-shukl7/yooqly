@@ -13,6 +13,7 @@ const companyRoutes = require('./routes/companyRoutes');
 const userRoutes = require('./routes/userRoutes');
 const customerRoutes = require('./routes/customerRoutes');
 const jobRoutes = require('./routes/jobRoutes');
+const jobTypeRoutes = require('./routes/jobTypeRoutes');
 const quoteRoutes = require('./routes/quoteRoutes');
 const invoiceRoutes = require('./routes/invoiceRoutes');
 
@@ -34,6 +35,7 @@ app.use('/api/company',companyRoutes);
 app.use('/api/users',userRoutes);
 app.use('/api/customers',customerRoutes);
 app.use('/api/jobs',jobRoutes);
+app.use('/api/jobType',jobTypeRoutes);
 app.use('/api/quotes',quoteRoutes);
 app.use('/api/invoice',invoiceRoutes);
 
