@@ -1,5 +1,6 @@
 const { validationResult } = require("express-validator");
 const jobModel = require("../models/jobModel");
+const jobTypeModel = require("../models/jobTypeModel");
 const jobService = require("../services/jobService");
 const customerService = require("../services/customerService");
 
@@ -27,7 +28,10 @@ module.exports.createJob = async (req,res,next) => {
         return res.status(400).json({ errors: errors.array()} );
     }
 
-    const { customerId ,quantity,type,deadline,estimatedCost,priority,requirements,comments,status} = req.body;
+    const { customerId ,quantity,type,subType,jobDetails,deadline,estimatedCost,priority,requirements,comments,status} = req.body;
+
+    const jobType = await jobTypeModel.findOne({ name: type });
+    if (!jobType) return res.status(404).json({ error: "Job type not found" });
 
     const job = await jobService.createJob({
         companyId : req.user.company.companyId,
@@ -35,6 +39,8 @@ module.exports.createJob = async (req,res,next) => {
         quantity: quantity,
         userId: req.user.user.userId,
         type: type,
+        subType: subType,
+        jobDetails: jobDetails,
         deadline: deadline,
         status: status,
         priority: priority,

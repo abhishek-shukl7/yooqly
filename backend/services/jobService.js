@@ -1,14 +1,14 @@
 const jobModel = require('../models/jobModel');
  const counters = require('../models/counterModel');
 
-module.exports.createJob = async ({ companyId,customerId,quantity,userId ,type,deadline,status,priority,requirements,comments,estimatedCost}) => {
-    if(!userId || !quantity|| !requirements || !type || !customerId || !deadline || !userId || !companyId || !status || !priority || !estimatedCost || !comments){
+module.exports.createJob = async ({ companyId,customerId,quantity,userId ,type,subType,jobDetails,deadline,status,priority,requirements,comments,estimatedCost}) => {
+    if(!userId || !quantity|| !requirements || !type || !subType || !jobDetails || !customerId || !deadline || !userId || !companyId || !status || !priority || !estimatedCost || !comments){
         throw new Error('Required fields are missing.');
     }
 
     try {
         const orderId = await generateNextOrderId();
-        const job = await jobModel.create({ companyId,customerId,quantity,userId,orderId ,type,deadline,status,priority,requirements,comments,estimatedCost});
+        const job = await jobModel.create({ companyId,customerId,quantity,userId,orderId ,type,subType,jobDetails,deadline,status,priority,requirements,comments,estimatedCost});
         
         return job;
     } catch (err) {
