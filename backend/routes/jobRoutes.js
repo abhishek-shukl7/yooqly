@@ -24,6 +24,6 @@ router.post('/update-job/:id',[
 
 // router.get('/deleteJob/:id',checkAdmin(['orders']),jobController.deleteJob);
 
-router.get('/getporduction',checkAdmin(['production']),jobController.getPorductionJobs);
+router.get('/getProduction',checkAdmin(['production']),jobController.getProductionJobs);
 
 module.exports = router;

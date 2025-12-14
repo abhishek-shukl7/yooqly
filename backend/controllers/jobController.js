@@ -82,9 +82,9 @@ module.exports.getAllJobs = async (req, res) => {
     }
 };
 
-module.exports.getPorductionJobs = async (req, res) => {
+module.exports.getProductionJobs = async (req, res) => {
     try {
-        const jobs = await jobService.getPorductionJobs(req.user.company.companyId);
+        const jobs = await jobService.getProductionJobs(req.user.company.companyId);
         return res.status(200).json({ jobs });
     } catch (err) {
         console.error('Error fetching all orders:', err);
