@@ -13,12 +13,15 @@ const jobSchema = new Schema({
     requirements: { type: String, required: true },
     comments: { type: String },
     status: { type: String,enum: ['Pending', 'In Production', 'Completed', 'On Hold', 'Cancelled'], default: 'Pending' },
-    type: { type: String , required: true },
-    subType: { type: String },
-    jobDetails: {
-        type: Object,
-        default: {}
+    jobDetails: [{
+        type: { type: String , required: true },
+        subType: { type: String },
+        fields: {
+            type: Object,
+            default: {}
+        }
     }
+    ],
 }, { timestamps: true });
 
 const jobModel = mongoose.model('Jobs', jobSchema);

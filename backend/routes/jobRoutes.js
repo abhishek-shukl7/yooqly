@@ -11,14 +11,12 @@ router.get('/getAllJobs',checkAdmin(['orders']),jobController.getAllJobs);
 router.post('/add-job',[
     body('customerId').isLength({ min: 1 }).withMessage('customerId is required'),
     body('quantity').isLength({ min: 1 }).withMessage('quantity is required'),
-    body('type').isLength({ min: 1 }).withMessage('type is required'),
     body('requirements').isLength({ min: 1 }).withMessage('requirements is required'),
 ],checkAdmin(['orders']),jobController.createJob);
 
 router.post('/update-job/:id',[
    body('customerId').isLength({ min: 1 }).withMessage('customerId is required'),
     body('quantity').isLength({ min: 1 }).withMessage('quantity is required'),
-    body('type').isLength({ min: 1 }).withMessage('type is required'),
     body('requirements').isLength({ min: 1 }).withMessage('requirements is required'),
 ],checkAdmin(['orders']),jobController.updateJob);
 
