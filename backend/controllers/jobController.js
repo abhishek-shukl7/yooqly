@@ -27,9 +27,6 @@ module.exports.createJob = async (req,res,next) => {
     }
 
     const { customerId ,quantity,jobDetails,deadline,estimatedCost,priority,requirements,comments,status} = req.body;
-
-    
-
     const job = await jobService.createJob({
         companyId : req.user.company.companyId,
         customerId : customerId,

@@ -44,9 +44,14 @@ module.exports.quoteApproval = async (req,res,next) => {
     if(!errors.isEmpty()){
         return res.status(400).json({ errors: errors.array()} );
     }
+    const { id, status } = req.body;
+    
+    if (!['approved', 'rejected'].includes(status)) {
+        return res.status(400).json({ message: 'Invalid status value.' });
+    }
 
     try {
-        const updatedQuote = await quoteService.quoteApproval(req.body.id);
+        const updatedQuote = await quoteService.quoteApproval(id, status);
         if (!updatedQuote) {
             return res.status(404).json({ message: 'quote not found.' });
         }

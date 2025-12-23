@@ -16,6 +16,7 @@ const jobRoutes = require('./routes/jobRoutes');
 const jobTypeRoutes = require('./routes/jobTypeRoutes');
 const quoteRoutes = require('./routes/quoteRoutes');
 const invoiceRoutes = require('./routes/invoiceRoutes');
+const productionJobRoutes = require('./routes/productionJobRoutes');
 
 const authRoutes = require('./routes/authRoutes');
 const onboardingRoutes = require('./routes/onboardingRoutes');
@@ -57,6 +58,8 @@ app.use('/api/jobs',jobRoutes);
 app.use('/api/jobType',jobTypeRoutes);
 app.use('/api/quotes',quoteRoutes);
 app.use('/api/invoice',invoiceRoutes);
+app.use('/api/invoice',invoiceRoutes);
+app.use('/api/production-jobs',productionJobRoutes);
 
 app.use('/api/auth',authRoutes);
 app.use('/api/onboarding',onboardingRoutes);

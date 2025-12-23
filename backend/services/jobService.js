@@ -10,11 +10,11 @@ module.exports.createJob = async ({ companyId,customerId,quantity,userId ,jobDet
 
     try {
 
-        let jobDetail = validateJobDetails(jobDetails, jobTypeModel);
-
+        jobDetails = await validateJobDetails(jobDetails, jobTypeModel);
+        console.log("Validated job details:", jobDetails);
         const orderId = await generateNextOrderId();
-        const job = await jobModel.create({ companyId,customerId,quantity,userId,orderId ,jobDetail,deadline,status,priority,requirements,comments,estimatedCost});
-        
+        const job = await jobModel.create({ companyId,customerId,quantity,userId,orderId ,jobDetails,deadline,status,priority,requirements,comments,estimatedCost});
+
         return job;
     } catch (err) {
         throw new Error('Error saving job to database.',err);
