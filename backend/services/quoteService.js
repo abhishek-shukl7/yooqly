@@ -1,5 +1,6 @@
 const quoteModel = require('../models/quoteModel');
 const jobModel = require('../models/jobModel');
+const jobTypeModel = require('../models/jobTypeModel');
 const productionJobService = require('./productionJobService');
 
 module.exports.createQuote = async ({ companyId,userId,customerId,jobId,orderId,tax,terms,requirements,quoteTotal,quoteItems,quoteDeadline }) => {
@@ -8,7 +9,10 @@ module.exports.createQuote = async ({ companyId,userId,customerId,jobId,orderId,
     }
 
     try {
-        const quote = await quoteModel.create({ companyId,userId,customerId,jobId,orderId,tax,terms,requirements,quoteTotal,quoteItems,quoteDeadline });
+
+        let quoteItem = await validateJobDetails(quoteItems, jobTypeModel);
+
+        const quote = await quoteModel.create({ companyId,userId,customerId,jobId,orderId,tax,terms,requirements,quoteTotal,quoteItems: quoteItem,quoteDeadline });
         return quote;
     } catch (err) {
         console.log(err);
@@ -61,3 +65,61 @@ module.exports.updateQuote = async (id, updateData) => {
 // module.exports.deleteQuote = async (id) => {
 //     return await quoteModel.findByIdAndDelete(id);
 // };
+
+async function validateJobDetails(userJobDetails, jobTypeSchema) {
+
+    if (!Array.isArray(userJobDetails) || userJobDetails.length === 0) {
+        throw new Error('Job details must be provided as a non-empty array.');
+    }
+
+    const validDetails = [];
+    const mainFields = jobTypeSchema.fields || [];
+
+    for (const detail of userJobDetails) {
+        if (!detail.itemName || !detail.fields) {
+            throw new Error('Each job detail item must have a "type" and a "fields" object.');
+        }
+
+        const jobTypeDocument = await jobTypeSchema.findOne({ name: detail.itemName }).lean();
+
+        if (!jobTypeDocument) {
+            throw new Error(`Invalid job type: ${detail.itemName}.`);
+        }
+        const subTypeMatch = jobTypeDocument.type.find(t => t.name === detail.subType);
+        
+        if (!subTypeMatch) {
+            throw new Error(`Invalid job sub-type: ${detail.itemName} for main type ${jobTypeSchema.name}.`);
+        }
+
+        let allRequiredFields = [...jobTypeDocument.fields];
+        if (subTypeMatch.fields) {
+            allRequiredFields.push(...subTypeMatch.fields);
+        }
+        
+
+        for (const fieldSchema of allRequiredFields) {
+            const fieldName = fieldSchema.name;
+            const userValue = detail.fields[fieldName];
+
+            if (fieldSchema.required && (userValue === undefined || userValue === null || userValue === '')) {
+                throw new Error(`Missing required field: '${fieldName}' for job type '${detail.itemName}'.`);
+            }
+
+            if (userValue && fieldSchema.values.length > 0) {
+                if (!fieldSchema.values.includes(userValue)) {
+                    throw new Error(`Invalid value '${userValue}' for field '${fieldName}' in job type '${detail.itemName}'. Must be one of: ${fieldSchema.values.join(', ')}.`);
+                }
+            }
+        }
+        
+        validDetails.push({
+            itemName: detail.itemName,
+            subType: detail.subType, 
+            fields: detail.fields,
+            unitPrice: detail.unitPrice,
+            totalPrice: detail.totalPrice
+        });
+    }
+
+    return validDetails;
+}

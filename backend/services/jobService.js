@@ -11,7 +11,7 @@ module.exports.createJob = async ({ companyId,customerId,quantity,userId ,jobDet
     try {
 
         jobDetails = await validateJobDetails(jobDetails, jobTypeModel);
-        console.log("Validated job details:", jobDetails);
+        // console.log("Validated job details:", jobDetails);
         const orderId = await generateNextOrderId();
         const job = await jobModel.create({ companyId,customerId,quantity,userId,orderId ,jobDetails,deadline,status,priority,requirements,comments,estimatedCost});
 

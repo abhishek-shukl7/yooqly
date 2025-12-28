@@ -3,9 +3,13 @@ const { Schema } = mongoose;
 
 const quoteItemSchema = new Schema({
     itemName: { type: String, required: true },
-    quantity: { type: Number, required: true },
+    subType: { type: String, required: true },
     unitPrice: { type: Number, required: true },
-    totalPrice: { type: Number, required: true }
+    totalPrice: { type: Number, required: true },
+    fields: {
+        type: Object,
+        default: {}
+    }
 });
 
 const quoteSchema = new Schema({

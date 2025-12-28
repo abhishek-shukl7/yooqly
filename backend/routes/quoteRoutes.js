@@ -17,7 +17,7 @@ router.post('/add-quote',[
         body('quoteTotal').isLength({ min: 1 }).withMessage('quoteTotal is required'),
         body('quoteItems').isArray({ min: 1 }).withMessage('quoteItems must be a non-empty array.'),
         body('quoteItems.*.itemName').notEmpty().withMessage('Item name is required.'),
-        body('quoteItems.*.quantity').isNumeric().withMessage('Quantity must be a number.'),
+        // body('quoteItems.*.quantity').isNumeric().withMessage('Quantity must be a number.'),
         body('quoteItems.*.unitPrice').isNumeric().withMessage('Unit price must be a number.'),
         body('quoteItems.*.totalPrice').isNumeric().withMessage('Total price must be a number.')
 ],checkAdmin(['quote']),quoteController.createQuote);
@@ -29,7 +29,7 @@ router.post('/update-quote/:id',[
         // body('status').optional().isIn(['draft', 'sent', 'approved', 'rejected']).withMessage('Invalid quote status.'),
         body('quoteItems').optional().isArray({ min: 1 }).withMessage('quoteItems must be a non-empty array.'),
         body('quoteItems.*.itemName').optional().notEmpty().withMessage('Item name is required.'),
-        body('quoteItems.*.quantity').optional().isNumeric().withMessage('Quantity must be a number.'),
+        // body('quoteItems.*.quantity').optional().isNumeric().withMessage('Quantity must be a number.'),
         body('quoteItems.*.unitPrice').optional().isNumeric().withMessage('Unit price must be a number.'),
         body('quoteItems.*.totalPrice').optional().isNumeric().withMessage('Total price must be a number.')
 ],checkAdmin(['quote']),quoteController.updateQuote);
