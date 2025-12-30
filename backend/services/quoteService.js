@@ -50,8 +50,8 @@ module.exports.quoteApproval = async (id,status) => {
                 jobDetails: job.jobDetails.map((detail, idx) => {
                     return {
                         ...detail.toObject(),
-                        status: job.status || 'Pending',
-                        priority: job.priority || 'Medium',
+                        status: 'Queued',
+                        priority: 'Medium',
                         completed: 0,
                         lineItemId: `LP-${(idx+1).toString().padStart(3, '0')}`
                     };
