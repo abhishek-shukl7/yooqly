@@ -27,16 +27,17 @@ module.exports.createProductionJob = async (req, res) => {
     if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
 
     try {
-        const { jobId, quoteId, jobDetails, productionStatus, productionStartDate, productionEndDate } = req.body;
+        const { jobId, quoteId, orderId, jobDetails, productionStatus, productionStartDate, productionDeadline } = req.body;
         const doc = await productionJobService.createProductionJob({
             companyId: req.user.company.companyId,
             userId: req.user.user.userId,
             jobId,
             quoteId,
+            orderId,
             jobDetails,
             productionStatus,
             productionStartDate,
-            productionEndDate
+            productionDeadline
         });
         return res.status(201).json({ productionJob: doc });
     } catch (err) {
@@ -66,6 +67,21 @@ module.exports.deleteProductionJob = async (req, res) => {
         return res.status(200).json({ message: 'Production job deleted successfully.' });
     } catch (err) {
         console.error('Error deleting production job:', err);
+        return res.status(500).json({ message: 'Internal Server Error' });
+    }
+};
+
+module.exports.updateJobDetailStatus = async (req, res) => {
+    const { productionJobId } = req.params;
+    const { lineItemId, status, completed, priority } = req.body;
+    try {
+        const jobDetails = await productionJobService.updateJobDetailStatus(productionJobId, { lineItemId, status, completed, priority });
+        return res.status(200).json({ jobDetails });
+    } catch (err) {
+        console.error('Error updating job detail status:', err);
+        if (err.message === 'Production job not found.' || err.message === 'Job detail not found.') {
+            return res.status(404).json({ message: err.message });
+        }
         return res.status(500).json({ message: 'Internal Server Error' });
     }
 };

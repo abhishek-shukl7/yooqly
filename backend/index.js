@@ -59,7 +59,7 @@ app.use('/api/jobType',jobTypeRoutes);
 app.use('/api/quotes',quoteRoutes);
 app.use('/api/invoice',invoiceRoutes);
 app.use('/api/invoice',invoiceRoutes);
-app.use('/api/production-jobs',productionJobRoutes);
+app.use('/api/productionJobs',productionJobRoutes);
 
 app.use('/api/auth',authRoutes);
 app.use('/api/onboarding',onboardingRoutes);

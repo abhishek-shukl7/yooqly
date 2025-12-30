@@ -43,15 +43,22 @@ module.exports.quoteApproval = async (id,status) => {
             await productionJobService.createProductionJob({
                 companyId: quoteStatus.companyId,
                 jobId: quoteStatus.jobId,
+                customerId: quoteStatus.customerId,
                 quoteId: quoteStatus._id,
                 userId: quoteStatus.userId,
-                jobDetails: job.jobDetails.map(detail => ({
-                    ...detail.toObject(),
-                    status: job.status || 'Pending'
-                })),
+                orderId: quoteStatus.orderId,
+                jobDetails: job.jobDetails.map((detail, idx) => {
+                    return {
+                        ...detail.toObject(),
+                        status: job.status || 'Pending',
+                        priority: job.priority || 'Medium',
+                        completed: 0,
+                        lineItemId: `LP-${(idx+1).toString().padStart(3, '0')}`
+                    };
+                }),
                 productionStatus: 'Not Started',
                 productionStartDate: new Date(),
-                productionEndDate: null
+                productionDeadline: null
             });
         }
     }
