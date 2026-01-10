@@ -58,7 +58,8 @@ module.exports.quoteApproval = async (id,status) => {
                 }),
                 productionStatus: 'Not Started',
                 productionStartDate: new Date(),
-                productionDeadline: null
+                companyId: quoteStatus.companyId,
+                productionDeadline: quoteStatus.quoteDeadline
             });
         }
     }

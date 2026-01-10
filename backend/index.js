@@ -20,6 +20,7 @@ const productionJobRoutes = require('./routes/productionJobRoutes');
 
 const authRoutes = require('./routes/authRoutes');
 const onboardingRoutes = require('./routes/onboardingRoutes');
+const test = require('./routes/test');
 
 connectDB();
 
@@ -63,6 +64,8 @@ app.use('/api/productionJobs',productionJobRoutes);
 
 app.use('/api/auth',authRoutes);
 app.use('/api/onboarding',onboardingRoutes);
+
+app.use('/api/test',test);
 
 app.listen(port,'0.0.0.0', () => {
   console.log(`Server is running on http://localhost:${port}`);
