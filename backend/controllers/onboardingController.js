@@ -41,17 +41,10 @@ exports.sendOnboardingLink = async(req,res) => {
         console.log('Generated Onboarding URL:', onboardingUrl);
 
         const transporter = nodemailer.createTransport({
-        host: "mailpit-xo4kkgwsoggko40g4cggkcg4.213.210.21.18.sslip.io", 
+        host: 'mailpit-xo4kkgwsoggko40g4cggkcg4.213.210.21.18.sslip.io',
         port: 1025,
-        secure: false, // Must be false for port 1025
-        auth: {
-            user: "anything", // Accepted because of MP_SMTP_AUTH_ACCEPT_ANY=1
-            pass: "anything"
-        },
-        tls: {
-            // Allows connection even if the certificate is self-signed/missing
-            rejectUnauthorized: false 
-        }
+        secure: false, 
+        auth: null
         });
         const test = await transporter.sendMail({
             from: '"Yooqly"<no-reply@yooqly.com>',
