@@ -41,12 +41,12 @@ exports.sendOnboardingLink = async(req,res) => {
         console.log('Generated Onboarding URL:', onboardingUrl);
 
         const transporter = nodemailer.createTransport({
-        host: 'coolify.hackersdaddy.com',
+        host: '213.210.21.18',
         port: 1025,
         secure: false, 
         auth: {
-            username: "",
-            password: ""
+            username: "admin",
+            password: "admin"
         }
         });
         const test = await transporter.sendMail({
