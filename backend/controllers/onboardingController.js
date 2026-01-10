@@ -41,7 +41,7 @@ exports.sendOnboardingLink = async(req,res) => {
         console.log('Generated Onboarding URL:', onboardingUrl);
 
         const transporter = nodemailer.createTransport({
-        host: "mailpit", 
+        host: "mailpit-xo4kkgwsoggko40g4cggkcg4.213.210.21.18.sslip.io", 
         port: 1025,
         secure: false, // Must be false for port 1025
         auth: {
