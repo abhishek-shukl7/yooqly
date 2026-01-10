@@ -41,10 +41,13 @@ exports.sendOnboardingLink = async(req,res) => {
         console.log('Generated Onboarding URL:', onboardingUrl);
 
         const transporter = nodemailer.createTransport({
-        host: 'mailpit-xo4kkgwsoggko40g4cggkcg4.213.210.21.18.sslip.io',
+        host: 'coolify.hackersdaddy.com',
         port: 1025,
         secure: false, 
-        auth: null
+        auth: {
+            username: "",
+            password: ""
+        }
         });
         const test = await transporter.sendMail({
             from: '"Yooqly"<no-reply@yooqly.com>',
