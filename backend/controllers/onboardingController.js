@@ -41,13 +41,12 @@ exports.sendOnboardingLink = async(req,res) => {
         console.log('Generated Onboarding URL:', onboardingUrl);
 
         const transporter = nodemailer.createTransport({
-        host: '213.210.21.18',
+        host: 'mailpit-xo4kkgwsoggko40g4cggkcg4',
         port: 1025,
         secure: false, 
-        auth: {
-            username: "admin",
-            password: "admin"
-        }
+        auth: null,
+        logger: true, // Enable this to see detailed logs in your Node console
+        debug: true
         });
         const test = await transporter.sendMail({
             from: '"Yooqly"<no-reply@yooqly.com>',
