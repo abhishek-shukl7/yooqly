@@ -72,7 +72,19 @@ module.exports.updateCustomer = async (req, res, next) => {
 module.exports.getAllCustomers = async (req, res) => {
     try {
         const customers = await customerService.getAllCustomers(req.user.company.companyId);
-        return res.status(200).json({ customers });
+
+        // Add job_count for each customer
+        const customersWithJobCount = await Promise.all(
+            customers.map(async (customer) => {
+                const jobCount = await jobService.getJobCountByCustomerId(customer._id);
+                return {
+                    ...customer.toObject(),
+                    job_count: jobCount
+                };
+            })
+        );
+
+        return res.status(200).json({ customers: customersWithJobCount });
     } catch (err) {
         console.error('Error fetching all customers:', err);
         return res.status(500).json({ message: 'Internal Server Error' });
