@@ -3,8 +3,8 @@ const jobModel = require('../models/jobModel');
 const jobTypeModel = require('../models/jobTypeModel');
 const productionJobService = require('./productionJobService');
 
-module.exports.createQuote = async ({ companyId,userId,customerId,jobId,orderId,tax,terms,requirements,quoteTotal,quoteItems,quoteDeadline }) => {
-    if(!customerId || !jobId || !orderId || !tax || !quoteTotal || !quoteItems || !quoteDeadline){
+module.exports.createQuote = async ({ companyId, userId, customerId, jobId, orderId, tax, terms, requirements, quoteTotal, quoteItems, quoteDeadline }) => {
+    if (!customerId || !jobId || !orderId || !tax || !quoteTotal || !quoteItems || !quoteDeadline) {
         throw new Error('Required fields are missing.');
     }
 
@@ -12,7 +12,7 @@ module.exports.createQuote = async ({ companyId,userId,customerId,jobId,orderId,
 
         let quoteItem = await validateJobDetails(quoteItems, jobTypeModel);
 
-        const quote = await quoteModel.create({ companyId,userId,customerId,jobId,orderId,tax,terms,requirements,quoteTotal,quoteItems: quoteItem,quoteDeadline });
+        const quote = await quoteModel.create({ companyId, userId, customerId, jobId, orderId, tax, terms, requirements, quoteTotal, quoteItems: quoteItem, quoteDeadline });
         return quote;
     } catch (err) {
         console.log(err);
@@ -21,8 +21,8 @@ module.exports.createQuote = async ({ companyId,userId,customerId,jobId,orderId,
 }
 
 
-module.exports.getAllQuotes= async (companyId) => {
-    return await quoteModel.find({companyId:companyId}).populate('customerId', 'customerName customerCompanyName');
+module.exports.getAllQuotes = async (companyId) => {
+    return await quoteModel.find({ companyId: companyId }).populate('customerId', 'customerName customerCompanyName');
 };
 
 module.exports.getQuoteById = async (id) => {
@@ -30,16 +30,19 @@ module.exports.getQuoteById = async (id) => {
 };
 
 
-module.exports.quoteApproval = async (id,status) => {
+module.exports.quoteApproval = async (id, status) => {
     if (!['approved', 'rejected'].includes(status)) {
         throw new Error('Invalid status value.');
     }
-    let quoteStatus =  await quoteModel.findByIdAndUpdate(id, {status}, { new: true, runValidators: true });
-    // If approved, create production job
+    let quoteStatus = await quoteModel.findByIdAndUpdate(id, { status }, { new: true, runValidators: true });
+    // If approved, update job status and create production job
     if (status === 'approved' && quoteStatus) {
         // Fetch job data
         const job = await jobModel.findById(quoteStatus.jobId);
         if (job) {
+            // Update job status to 'In Production' when quote is approved
+            await jobModel.findByIdAndUpdate(quoteStatus.jobId, { status: 'In Production' });
+
             await productionJobService.createProductionJob({
                 companyId: quoteStatus.companyId,
                 jobId: quoteStatus.jobId,
@@ -53,7 +56,7 @@ module.exports.quoteApproval = async (id,status) => {
                         status: 'Queued',
                         priority: 'Medium',
                         completed: 0,
-                        lineItemId: `LP-${(idx+1).toString().padStart(3, '0')}`
+                        lineItemId: `LP-${(idx + 1).toString().padStart(3, '0')}`
                     };
                 }),
                 productionStatus: 'Not Started',
@@ -94,7 +97,7 @@ async function validateJobDetails(userJobDetails, jobTypeSchema) {
             throw new Error(`Invalid job type: ${detail.itemName}.`);
         }
         const subTypeMatch = jobTypeDocument.type.find(t => t.name === detail.subType);
-        
+
         if (!subTypeMatch) {
             throw new Error(`Invalid job sub-type: ${detail.itemName} for main type ${jobTypeSchema.name}.`);
         }
@@ -103,7 +106,7 @@ async function validateJobDetails(userJobDetails, jobTypeSchema) {
         if (subTypeMatch.fields) {
             allRequiredFields.push(...subTypeMatch.fields);
         }
-        
+
 
         for (const fieldSchema of allRequiredFields) {
             const fieldName = fieldSchema.name;
@@ -119,10 +122,10 @@ async function validateJobDetails(userJobDetails, jobTypeSchema) {
                 }
             }
         }
-        
+
         validDetails.push({
             itemName: detail.itemName,
-            subType: detail.subType, 
+            subType: detail.subType,
             fields: detail.fields,
             unitPrice: detail.unitPrice,
             totalPrice: detail.totalPrice
