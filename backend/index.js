@@ -69,7 +69,7 @@ app.use(limiter);
 
 const allowedOrigins = [
   'https://stage-bigdaddy.hackersdaddy.com',
-  'http://localhost:3001'
+  'http://localhost:3000'
 ];
 
 const corsOptions = {
@@ -98,19 +98,19 @@ app.get('/', (req, res) => {
 });
 
 
-app.use('/api/company',companyRoutes);
-app.use('/api/users',userRoutes);
-app.use('/api/customers',customerRoutes);
-app.use('/api/jobs',jobRoutes);
-app.use('/api/jobType',jobTypeRoutes);
-app.use('/api/quotes',quoteRoutes);
+app.use('/api/company', companyRoutes);
+app.use('/api/users', userRoutes);
+app.use('/api/customers', customerRoutes);
+app.use('/api/jobs', jobRoutes);
+app.use('/api/jobType', jobTypeRoutes);
+app.use('/api/quotes', quoteRoutes);
 app.use('/api/invoice', invoiceRoutes);
-app.use('/api/productionJobs',productionJobRoutes);
+app.use('/api/productionJobs', productionJobRoutes);
 
-app.use('/api/auth',authRoutes);
-app.use('/api/onboarding',onboardingRoutes);
+app.use('/api/auth', authRoutes);
+app.use('/api/onboarding', onboardingRoutes);
 
-app.use('/api/test',test);
+app.use('/api/test', test);
 
 // Health check endpoint
 app.get('/health', (req, res) => {
