@@ -3,7 +3,7 @@ const jobModel = require('../models/jobModel');
 const jobTypeModel = require('../models/jobTypeModel');
 const productionJobService = require('./productionJobService');
 
-module.exports.createQuote = async ({ companyId, userId, customerId, jobId, orderId, tax, terms, requirements, quoteTotal, quoteItems, quoteDeadline }) => {
+module.exports.createQuote = async ({ companyId, userId, customerId, jobId, orderId, tax, terms, requirements, quoteTotal, quoteItems, quoteDeadline, status }) => {
     if (!customerId || !jobId || !orderId || !tax || !quoteTotal || !quoteItems || !quoteDeadline) {
         throw new Error('Required fields are missing.');
     }
@@ -12,7 +12,7 @@ module.exports.createQuote = async ({ companyId, userId, customerId, jobId, orde
 
         let quoteItem = await validateJobDetails(quoteItems, jobTypeModel);
 
-        const quote = await quoteModel.create({ companyId, userId, customerId, jobId, orderId, tax, terms, requirements, quoteTotal, quoteItems: quoteItem, quoteDeadline });
+        const quote = await quoteModel.create({ companyId, userId, customerId, jobId, orderId, tax, terms, requirements, quoteTotal, quoteItems: quoteItem, quoteDeadline, status });
         return quote;
     } catch (err) {
         console.log(err);

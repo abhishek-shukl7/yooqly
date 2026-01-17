@@ -25,7 +25,7 @@ module.exports.createQuote = async (req, res, next) => {
         return res.status(400).json({ errors: errors.array() });
     }
 
-    const { customerId, jobId, orderId, tax, terms, requirements, quoteTotal, quoteItems, quoteDeadline } = req.body;
+    const { customerId, jobId, orderId, tax, terms, requirements, quoteTotal, quoteItems, quoteDeadline, status } = req.body;
     const quote = await quoteService.createQuote({
         companyId: req.user.company.companyId,
         userId: req.user.user.userId,
@@ -37,17 +37,20 @@ module.exports.createQuote = async (req, res, next) => {
         terms,
         requirements,
         quoteTotal,
-        quoteItems
+        quoteItems,
+        status // Pass status to service
     });
 
-    // Fetch customer details to get email
-    try {
-        const customer = await customerService.getCustomerById(customerId);
-        if (customer && customer.customerEmail) {
-            sendQuoteEmail(quote._id, quote, customer.customerEmail);
+    // Email Trigger: If created as 'sent', trigger email
+    if (status === 'sent') {
+        try {
+            const customer = await customerService.getCustomerById(customerId);
+            if (customer && customer.customerEmail) {
+                sendQuoteEmail(quote._id, quote, customer.customerEmail);
+            }
+        } catch (err) {
+            console.error('Error sending quote email on create:', err);
         }
-    } catch (err) {
-        console.error('Error sending quote email:', err);
     }
 
     return res.status(200).json({ quote: quote });
@@ -115,6 +118,19 @@ module.exports.updateQuote = async (req, res, next) => {
         if (!updatedQuote) {
             return res.status(404).json({ message: 'quote not found.' });
         }
+
+        // Trigger Email if status is changed to 'sent'
+        if (req.body.status === 'sent') {
+            try {
+                const customer = await customerService.getCustomerById(updatedQuote.customerId);
+                if (customer && customer.customerEmail) {
+                    sendQuoteEmail(updatedQuote._id, updatedQuote, customer.customerEmail);
+                }
+            } catch (err) {
+                console.error('Error sending quote email on update:', err);
+            }
+        }
+
         return res.status(200).json({ quote: updatedQuote });
     } catch (err) {
         console.error('Error updating quote:', err);
