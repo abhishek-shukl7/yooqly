@@ -5,7 +5,7 @@ const templateWorker = require('../worker/templateWorker');
 const emailWorker = require('../services/emailWorker');
 const jobService = require('../services/jobService');
 
-module.exports.getCustomer = async (req,res,next) => {
+module.exports.getCustomer = async (req, res, next) => {
     try {
         const customer = await customerService.getCustomerById(req.params.id);
         if (!customer) {
@@ -19,25 +19,25 @@ module.exports.getCustomer = async (req,res,next) => {
     }
 }
 
-module.exports.createCustomer = async (req,res,next) => {
+module.exports.createCustomer = async (req, res, next) => {
     const errors = validationResult(req);
-    if(!errors.isEmpty()){
-        return res.status(400).json({ errors: errors.array()} );
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
     }
     console.log("create customer req user:", req.user);
     console.log("create customer req body:", req.body);
 
-    const { customerEmail, customerName , customerCompanyName, phone, address } = req.body;
+    const { customerEmail, customerName, customerCompanyName, phone, address } = req.body;
 
     const customerExists = await customerService.findCustomerByEmail({ customerEmail });
-    
-    if(customerExists){
-        return res.status(400).json({ message : 'customer already exists.'});
+
+    if (customerExists) {
+        return res.status(400).json({ message: 'customer already exists.' });
     }
-    
+
     const customer = await customerService.createCustomer({
-        customerEmail : customerEmail,
-        customerName : customerName,
+        customerEmail: customerEmail,
+        customerName: customerName,
         customerCompanyName: customerCompanyName,
         phone: phone,
         address: address,
@@ -46,14 +46,14 @@ module.exports.createCustomer = async (req,res,next) => {
 
     // sendCustomerWelcomeEmail(customerName, req.user.company.companyName, customerEmail);
 
-    return res.status(200).json({customer: customer});
+    return res.status(200).json({ customer: customer });
 }
 
 
-module.exports.updateCustomer = async (req,res,next) => {
+module.exports.updateCustomer = async (req, res, next) => {
     const errors = validationResult(req);
-    if(!errors.isEmpty()){
-        return res.status(400).json({ errors: errors.array()} );
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
     }
 
     try {
@@ -82,7 +82,7 @@ module.exports.getAllCustomers = async (req, res) => {
 
 module.exports.deleteCustomer = async (req, res) => {
     try {
-        const deletedCustomer = await CustomerService.deleteCustomer(req.params.id);
+        const deletedCustomer = await customerService.deleteCustomer(req.params.id);
         if (!deletedCustomer) {
             return res.status(404).json({ message: 'customer not found.' });
         }
