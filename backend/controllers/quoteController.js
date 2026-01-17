@@ -1,10 +1,12 @@
 const { validationResult } = require("express-validator");
 const quoteModel = require("../models/quoteModel");
 const quoteService = require("../services/quoteService");
+const customerService = require("../services/customerService");
 const templateWorker = require('../worker/templateWorker');
 const emailWorker = require('../services/emailWorker');
+const jwt = require('jsonwebtoken');
 
-module.exports.getQuote = async (req,res,next) => {
+module.exports.getQuote = async (req, res, next) => {
     try {
         const quote = await quoteService.getQuoteById(req.params.id);
         if (!quote) {
@@ -17,15 +19,15 @@ module.exports.getQuote = async (req,res,next) => {
     }
 }
 
-module.exports.createQuote = async (req,res,next) => {
+module.exports.createQuote = async (req, res, next) => {
     const errors = validationResult(req);
-    if(!errors.isEmpty()){
-        return res.status(400).json({ errors: errors.array()} );
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
     }
 
-    const  { customerId,jobId,orderId,tax,terms,requirements,quoteTotal,quoteItems,quoteDeadline }  = req.body;
+    const { customerId, jobId, orderId, tax, terms, requirements, quoteTotal, quoteItems, quoteDeadline } = req.body;
     const quote = await quoteService.createQuote({
-        companyId : req.user.company.companyId,
+        companyId: req.user.company.companyId,
         userId: req.user.user.userId,
         customerId,
         jobId,
@@ -33,23 +35,31 @@ module.exports.createQuote = async (req,res,next) => {
         quoteDeadline,
         tax,
         terms,
-        requirements ,
+        requirements,
         quoteTotal,
         quoteItems
     });
 
-    // sendQuoteEmail(quote._id, quote, req.user.email);
+    // Fetch customer details to get email
+    try {
+        const customer = await customerService.getCustomerById(customerId);
+        if (customer && customer.customerEmail) {
+            sendQuoteEmail(quote._id, quote, customer.customerEmail);
+        }
+    } catch (err) {
+        console.error('Error sending quote email:', err);
+    }
 
-    return res.status(200).json({quote: quote});
+    return res.status(200).json({ quote: quote });
 }
 
-module.exports.quoteApproval = async (req,res,next) => {
+module.exports.quoteApproval = async (req, res, next) => {
     const errors = validationResult(req);
-    if(!errors.isEmpty()){
-        return res.status(400).json({ errors: errors.array()} );
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
     }
     const { id, status } = req.body;
-    
+
     if (!['approved', 'rejected'].includes(status)) {
         return res.status(400).json({ message: 'Invalid status value.' });
     }
@@ -68,10 +78,36 @@ module.exports.quoteApproval = async (req,res,next) => {
 }
 
 
-module.exports.updateQuote = async (req,res,next) => {
+module.exports.processQuoteResponse = async (req, res) => {
+    const { token } = req.query;
+    if (!token) return res.status(400).send('Invalid request.');
+
+    try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET || 'secret_key');
+        const { quoteId, action } = decoded;
+
+        // Update quote status
+        await quoteService.quoteApproval(quoteId, action);
+
+        // Simple success page
+        res.send(`
+            <html>
+                <body style="font-family: Arial; text-align: center; padding-top: 50px;">
+                    <h1 style="color: ${action === 'approved' ? 'green' : 'red'};">Quote ${action === 'approved' ? 'Approved' : 'Rejected'}</h1>
+                    <p>Thank you for your response. The quote status has been updated.</p>
+                </body>
+            </html>
+        `);
+    } catch (err) {
+        console.error('Token verification failed:', err);
+        res.status(400).send('Invalid or expired link.');
+    }
+};
+
+module.exports.updateQuote = async (req, res, next) => {
     const errors = validationResult(req);
-    if(!errors.isEmpty()){
-        return res.status(400).json({ errors: errors.array()} );
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
     }
 
     try {
@@ -99,9 +135,20 @@ module.exports.getAllQuotes = async (req, res) => {
 
 // Example: Send quote email
 async function sendQuoteEmail(quoteId, quoteDetails, toEmail) {
-    const html = templateWorker.getTemplate('sendQuote', { quoteId, quoteDetails });
+    // Generate Magic Links
+    const secret = process.env.JWT_SECRET || 'secret_key';
+    const baseUrl = 'http://localhost:3001'; // TODO: Use env variable for production URL
+
+    const approveToken = jwt.sign({ quoteId, action: 'approved' }, secret, { expiresIn: '7d' });
+    const rejectToken = jwt.sign({ quoteId, action: 'rejected' }, secret, { expiresIn: '7d' });
+
+    const approveLink = `${baseUrl}/api/quotes/respond?token=${approveToken}`;
+    const rejectLink = `${baseUrl}/api/quotes/respond?token=${rejectToken}`;
+
+    const html = templateWorker.getTemplate('sendQuote', { quoteId, quoteDetails, approveLink, rejectLink });
+
     await emailWorker.sendEmail({
-        from: 'Yooqly <no-reply@yooqly.com>',
+        from: 'testclient@hackersdaddy.com',
         to: toEmail,
         subject: 'Your Quote #' + quoteId,
         html
