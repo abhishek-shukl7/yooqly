@@ -137,7 +137,7 @@ module.exports.getAllQuotes = async (req, res) => {
 async function sendQuoteEmail(quoteId, quoteDetails, toEmail) {
     // Generate Magic Links
     const secret = process.env.JWT_SECRET || 'secret_key';
-    const baseUrl = 'http://localhost:3001'; // TODO: Use env variable for production URL
+    const baseUrl = process.env.API_BASE_URL || 'http://localhost:3001'; // TODO: Use env variable for production URL
 
     const approveToken = jwt.sign({ quoteId, action: 'approved' }, secret, { expiresIn: '7d' });
     const rejectToken = jwt.sign({ quoteId, action: 'rejected' }, secret, { expiresIn: '7d' });
@@ -145,7 +145,7 @@ async function sendQuoteEmail(quoteId, quoteDetails, toEmail) {
     const approveLink = `${baseUrl}/api/quotes/respond?token=${approveToken}`;
     const rejectLink = `${baseUrl}/api/quotes/respond?token=${rejectToken}`;
 
-    const html = templateWorker.getTemplate('sendQuote', { quoteId, quoteDetails, approveLink, rejectLink });
+    const html = templateWorker.getTemplate('sendQuote', { quoteId, quote: quoteDetails, approveLink, rejectLink });
 
     await emailWorker.sendEmail({
         from: 'testclient@hackersdaddy.com',

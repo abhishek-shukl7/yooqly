@@ -122,3 +122,4 @@
 {"level":"info","message":"127.0.0.1 - - [17/Jan/2026:12:51:12 +0000] \"GET /api/quotes/getAllQuotes HTTP/1.1\" 200 13 \"-\" \"PostmanRuntime/7.29.2\"","timestamp":"2026-01-17T12:51:12.467Z"}
 {"level":"info","message":"127.0.0.1 - - [17/Jan/2026:12:51:26 +0000] \"GET /api/productionJobs/getAllProductionJobs HTTP/1.1\" 200 11 \"-\" \"PostmanRuntime/7.29.2\"","timestamp":"2026-01-17T12:51:26.264Z"}
 {"level":"info","message":"SIGINT received. Shutting down gracefully...","timestamp":"2026-01-17T12:51:42.822Z"}
+{"level":"info","message":"Server is running on http://localhost:3001","timestamp":"2026-01-17T22:27:30.146Z"}
