@@ -1,6 +1,8 @@
 const { validationResult } = require("express-validator");
 const userModel = require("../models/usersModel");
 const userService = require("../services/userService");
+const templateWorker = require('../worker/templateWorker');
+const emailWorker = require('../services/emailWorker');
 
 module.exports.getUser = async (req,res,next) => {
     try {
@@ -39,6 +41,9 @@ module.exports.createUser = async (req,res,next) => {
     });
 
     const token = user.generateAuthToken();
+
+    // Example: Send user registration email
+    // await sendUserRegisteredEmail(name, companyId, email);
 
     return res.status(200).json({token: token,user: user});
 }
@@ -86,3 +91,14 @@ module.exports.deleteUser = async (req, res) => {
         return res.status(500).json({ message: 'Internal Server Error' });
     }
 };
+
+// Example: Send user registration email
+async function sendUserRegisteredEmail(userName, companyName, toEmail) {
+    const html = templateWorker.getTemplate('userRegistered', { userName, companyName });
+    await emailWorker.sendEmail({
+        from: 'Yooqly <no-reply@yooqly.com>',
+        to: toEmail,
+        subject: 'Welcome to ' + companyName,
+        html
+    });
+}

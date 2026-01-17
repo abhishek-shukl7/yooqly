@@ -23,7 +23,11 @@ module.exports.getProductionJobById = async (id) => {
 };
 
 module.exports.updateProductionJob = async (id, updateData) => {
-    return await productionJobModel.findByIdAndUpdate(id, updateData, { new: true, runValidators: true });
+    // Only update productionStatus and productionDeadline
+    const allowedFields = {};
+    if (updateData.productionStatus !== undefined) allowedFields.productionStatus = updateData.productionStatus;
+    if (updateData.productionDeadline !== undefined) allowedFields.productionDeadline = updateData.productionDeadline;
+    return await productionJobModel.findByIdAndUpdate(id, allowedFields, { new: true, runValidators: true });
 };
 
 module.exports.deleteProductionJob = async (id) => {

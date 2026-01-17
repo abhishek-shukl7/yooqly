@@ -3,8 +3,9 @@ const router = express.Router();
 const { body } = require('express-validator');
 const companyController = require('../controllers/companyController');
 const authMiddleware = require('../middlewares/authMiddleware');
+const { cacheMiddleware } = require('../utils/cache');
 
-router.get('/getCompany/:id',authMiddleware.checkAdmin,companyController.getCompany);
+router.get('/getCompany/:id', authMiddleware.checkAdmin, cacheMiddleware(300), companyController.getCompany);
 
 // router.get('/getAllCompanies',authMiddleware.checkSuperAdmin,companyController.getAllCompanies);
 

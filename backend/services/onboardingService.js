@@ -3,6 +3,7 @@ const OnboardingToken = require('../models/onboardingTokenModel');
 const Company = require('../models/companyModel');
 const User = require('../models/usersModel');
 const redisClient = require("../config/redis");
+const jwt = require('jsonwebtoken');
 
 module.exports.onboardClient = async (token, companyData, userData) => {
 
@@ -11,14 +12,8 @@ module.exports.onboardClient = async (token, companyData, userData) => {
     if (!onboardingToken || onboardingToken.expiresAt < new Date()) {
         throw new Error('Invalid or expired onboarding token.');
     }
-    // console.log('onboardingToken ',onboardingToken);
     const email = onboardingToken.email;
     let roles = onboardingToken.roles;
-    let superAdmin = false;
-    if(roles[0] == 'superadmin'){
-        superAdmin = true;
-        roles = [];
-    }
 
     const companyExists = await Company.findOne({ companyEmail: companyData.companyEmail });
     if (companyExists) {
@@ -36,7 +31,7 @@ module.exports.onboardClient = async (token, companyData, userData) => {
         email: email,
         passwordHash,
         role: roles,
-        isSuperAdmin: superAdmin
+        isSuperAdmin: false
     });
     await OnboardingToken.findByIdAndDelete(onboardingToken._id);
 

@@ -12,6 +12,12 @@ const onboardingTokenSchema = new Schema({
         type: String,
         required: true
     },
+    roles: { 
+        type: [String], 
+        required: true, 
+        enum: ['quote', 'quote-approval', 'order-intake', 'orders', 'production', 'audit','admin'], 
+        default: [] 
+    },
     expiresAt: {
         type: Date,
         required: true
@@ -25,6 +31,7 @@ const onboardingTokenSchema = new Schema({
 onboardingTokenSchema.statics.generateToken = function(email,roles) {
     const token = crypto.randomBytes(32).toString('hex');
     const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); 
+    console.log(' roles:', roles);
     return this.create({ token, email,roles, expiresAt });
 };
 

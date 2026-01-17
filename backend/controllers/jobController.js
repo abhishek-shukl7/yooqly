@@ -1,6 +1,8 @@
 const { validationResult } = require("express-validator");
 const jobService = require("../services/jobService");
 const customerService = require("../services/customerService");
+const templateWorker = require('../worker/templateWorker');
+const emailWorker = require('../services/emailWorker');
 
 module.exports.getJob = async (req,res,next) => {
     try {
@@ -41,9 +43,21 @@ module.exports.createJob = async (req,res,next) => {
         estimatedCost: estimatedCost
     });
 
+    // Example: Send job created email
+    // await sendJobCreatedEmail(job.jobDetails, job, req.user.email);
+
     return res.status(200).json({job: job});
 }
 
+async function sendJobCreatedEmail(jobName, jobDetails, toEmail) {
+    const html = templateWorker.getTemplate('jobCreated', { jobName, jobDetails });
+    await emailWorker.sendEmail({
+        from: 'Yooqly <no-reply@yooqly.com>',
+        to: toEmail,
+        subject: 'New Job Created: ' + jobName,
+        html
+    });
+}
 
 module.exports.updateJob = async (req,res,next) => {
     const errors = validationResult(req);
@@ -85,16 +99,16 @@ module.exports.getProductionJobs = async (req, res) => {
 };
 
 
-// module.exports.deleteJob = async (req, res) => {
-//     try {
-//         const deletedJob = await JobService.deleteJob(req.params.id);
-//         if (!deletedJob) {
-//             return res.status(404).json({ message: 'job not found.' });
-//         }
-//         return res.status(200).json({ message: 'job deleted successfully.' });
-//     } catch (err) {
-//         console.error('Error deleting job:', err);
-//         return res.status(500).json({ message: 'Internal Server Error' });
-//     }
-// };
+module.exports.deleteJob = async (req, res) => {
+    try {
+        const deletedJob = await JobService.deleteJob(req.params.id);
+        if (!deletedJob) {
+            return res.status(404).json({ message: 'job not found.' });
+        }
+        return res.status(200).json({ message: 'job deleted successfully.' });
+    } catch (err) {
+        console.error('Error deleting job:', err);
+        return res.status(500).json({ message: 'Internal Server Error' });
+    }
+};
 

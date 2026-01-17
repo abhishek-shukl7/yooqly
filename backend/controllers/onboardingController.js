@@ -1,7 +1,7 @@
 const { validationResult } = require('express-validator');
 const onboardingService = require('../services/onboardingService');
 const OnboardingToken = require('../models/onboardingTokenModel');
-const nodemailer = require('nodemailer'); 
+const emailWorker = require('../services/emailWorker');
 
 exports.onboardClient = async (req, res) => {
     const errors = validationResult(req);
@@ -29,41 +29,33 @@ exports.onboardClient = async (req, res) => {
 
 exports.sendOnboardingLink = async(req,res) => {
     const {email,roles,code} = req.body;
-    console.log('req.body',req.body);
+
     try {
         if(code !== process.env.CODE){
-            res.status(403).json({ error: 'Forbidden' });
+            return res.status(403).json({ error: 'Forbidden' });
         }
         const tokenDoc = await OnboardingToken.generateToken(email,roles);
         const token = tokenDoc.token;
-        
-        const onboardingUrl = process.env.API_BASE_URL+ `api/onboarding?token=${token}`;
-        console.log('Generated Onboarding URL:', onboardingUrl);
 
-        const transporter = nodemailer.createTransport({
-        host: 'mailpit-xo4kkgwsoggko40g4cggkcg4',
-        port: 1025,
-        secure: false, 
-        auth: null,
-        logger: true, // Enable this to see detailed logs in your Node console
-        debug: true
-        });
-        const test = await transporter.sendMail({
-            from: '"Yooqly"<no-reply@yooqly.com>',
+        const onboardingUrl = process.env.API_BASE_URL+ `/api/onboarding/onboarding-client/token/${token}`;
+
+        // Use emailWorker to send the onboarding email
+        const mailOptions = {
+            from: 'testclient@hackersdaddy.com',
             to: email,
             subject: 'Welcome! Complete Your Account Setup',
             html: `
                 <p>Welcome to our platform!</p>
-                <p>Please click the link below to set up your company account and create your superadmin profile:</p>
+                <p>Please click the link below to set up your company account and create your admin profile:</p>
                 <a href="${onboardingUrl}">Set Up Your Account</a>
                 <p>This link will expire in 24 hours.</p>
             `,
-        });
-        console.log('email send',test);
+        };
+        const mailResult = await emailWorker.sendEmail(mailOptions);
 
-        console.log(`Onboarding link sent to ${email}`);
+        return res.status(200).json({ message: `Onboarding link sent to ${email}` });
     } catch (error) {
         console.error(`Failed to send onboarding link to ${email}:`, error);
-        throw new Error('Could not send onboarding link.');
+        return res.status(500).json({ message: 'Could not send onboarding link', error: error.message });
     }
 }

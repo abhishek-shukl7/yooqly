@@ -9,12 +9,9 @@ module.exports.createJob = async ({ companyId,customerId,quantity,userId ,jobDet
     }
 
     try {
-
         jobDetails = await validateJobDetails(jobDetails, jobTypeModel);
-        // console.log("Validated job details:", jobDetails);
         const orderId = await generateNextOrderId();
         const job = await jobModel.create({ companyId,customerId,quantity,userId,orderId ,jobDetails,deadline,status,priority,requirements,comments,estimatedCost});
-
         return job;
     } catch (err) {
         throw new Error('Error saving job to database.',err);
@@ -39,9 +36,9 @@ module.exports.updateJob = async (id, updateData) => {
     return await jobModel.findByIdAndUpdate(id, updateData, { new: true, runValidators: true });
 };
 
-// module.exports.deleteJob = async (id) => {
-//     return await jobModel.findByIdAndDelete(id);
-// };
+module.exports.getJobCountByCustomerId = async (customerId) => {
+    return await jobModel.countDocuments({ customerId });
+};
 
 async function generateNextOrderId() {
   try {

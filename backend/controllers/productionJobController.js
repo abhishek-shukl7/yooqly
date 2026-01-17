@@ -1,5 +1,7 @@
 const { validationResult } = require('express-validator');
 const productionJobService = require('../services/productionJobService');
+const templateWorker = require('../worker/templateWorker');
+const emailWorker = require('../services/emailWorker');
 
 module.exports.getProductionJob = async (req, res) => {
     try {
@@ -51,8 +53,43 @@ module.exports.updateProductionJob = async (req, res) => {
     if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
 
     try {
-        const updated = await productionJobService.updateProductionJob(req.params.id, req.body);
+        // Only allow updating productionStatus and productionDeadline
+        const { productionStatus, productionDeadline } = req.body;
+        const updateData = {};
+        if (productionStatus !== undefined) {
+            updateData.productionStatus = productionStatus;
+        }
+        if (productionDeadline !== undefined) {
+            updateData.productionDeadline = productionDeadline;
+        }
+        const updated = await productionJobService.updateProductionJob(req.params.id, updateData);
         if (!updated) return res.status(404).json({ message: 'Production job not found.' });
+
+        // If productionStatus is being updated, update status in job model as well
+        if (productionStatus !== undefined) {
+            const jobService = require('../services/jobService');
+            // Map productionStatus to job status
+            let jobStatus;
+            switch (productionStatus) {
+                case 'Not Started':
+                    jobStatus = 'Pending';
+                    break;
+                case 'In Progress':
+                    jobStatus = 'In Production';
+                    break;
+                case 'Completed':
+                    jobStatus = 'Completed';
+                    break;
+                case 'Paused':
+                    jobStatus = 'On Hold';
+                    break;
+                default:
+                    jobStatus = undefined;
+            }
+            if (jobStatus) {
+                await jobService.updateJob(updated.jobId, { status: jobStatus });
+            }
+        }
         return res.status(200).json({ productionJob: updated });
     } catch (err) {
         console.error('Error updating production job:', err);
@@ -76,6 +113,7 @@ module.exports.updateJobDetailStatus = async (req, res) => {
     const { lineItemId, status, completed, priority } = req.body;
     try {
         const jobDetails = await productionJobService.updateJobDetailStatus(productionJobId, { lineItemId, status, completed, priority });
+        // sendProductionJobUpdateEmail(jobName, jobDetails, req.user.email);
         return res.status(200).json({ jobDetails });
     } catch (err) {
         console.error('Error updating job detail status:', err);
@@ -85,3 +123,14 @@ module.exports.updateJobDetailStatus = async (req, res) => {
         return res.status(500).json({ message: 'Internal Server Error' });
     }
 };
+
+// Example: Send production job update email
+async function sendProductionJobUpdateEmail(jobName, updateDetails, toEmail) {
+    const html = templateWorker.getTemplate('productionJobUpdate', { jobName, updateDetails });
+    await emailWorker.sendEmail({
+        from: 'Yooqly <no-reply@yooqly.com>',
+        to: toEmail,
+        subject: 'Production Job Update: ' + jobName,
+        html
+    });
+}

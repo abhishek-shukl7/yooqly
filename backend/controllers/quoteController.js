@@ -1,6 +1,8 @@
 const { validationResult } = require("express-validator");
 const quoteModel = require("../models/quoteModel");
 const quoteService = require("../services/quoteService");
+const templateWorker = require('../worker/templateWorker');
+const emailWorker = require('../services/emailWorker');
 
 module.exports.getQuote = async (req,res,next) => {
     try {
@@ -36,6 +38,8 @@ module.exports.createQuote = async (req,res,next) => {
         quoteItems
     });
 
+    // sendQuoteEmail(quote._id, quote, req.user.email);
+
     return res.status(200).json({quote: quote});
 }
 
@@ -55,6 +59,7 @@ module.exports.quoteApproval = async (req,res,next) => {
         if (!updatedQuote) {
             return res.status(404).json({ message: 'quote not found.' });
         }
+        sendQuoteStatusEmail(id, status, updatedQuote.rejectionReason, req.user.email);
         return res.status(200).json({ quote: updatedQuote });
     } catch (err) {
         console.error('Error updating quote:', err);
@@ -92,16 +97,37 @@ module.exports.getAllQuotes = async (req, res) => {
     }
 };
 
+// Example: Send quote email
+async function sendQuoteEmail(quoteId, quoteDetails, toEmail) {
+    const html = templateWorker.getTemplate('sendQuote', { quoteId, quoteDetails });
+    await emailWorker.sendEmail({
+        from: 'Yooqly <no-reply@yooqly.com>',
+        to: toEmail,
+        subject: 'Your Quote #' + quoteId,
+        html
+    });
+}
 
-// module.exports.deleteQuote = async (req, res) => {
-//     try {
-//         const deletedQuote = await QuoteService.deleteQuote(req.params.id);
-//         if (!deletedQuote) {
-//             return res.status(404).json({ message: 'quote not found.' });
-//         }
-//         return res.status(200).json({ message: 'quote deleted successfully.' });
-//     } catch (err) {
-//         console.error('Error deleting quote:', err);
-//         return res.status(500).json({ message: 'Internal Server Error' });
-//     }
-// };
+// Example: Send quote status email
+async function sendQuoteStatusEmail(quoteId, status, reason, toEmail) {
+    const html = templateWorker.getTemplate('quoteStatus', { quoteId, status, reason });
+    await emailWorker.sendEmail({
+        from: 'Yooqly <no-reply@yooqly.com>',
+        to: toEmail,
+        subject: `Quote #${quoteId} ${status === 'approved' ? 'Approved' : 'Rejected'}`,
+        html
+    });
+}
+
+module.exports.deleteQuote = async (req, res) => {
+    try {
+        const deletedQuote = await QuoteService.deleteQuote(req.params.id);
+        if (!deletedQuote) {
+            return res.status(404).json({ message: 'quote not found.' });
+        }
+        return res.status(200).json({ message: 'quote deleted successfully.' });
+    } catch (err) {
+        console.error('Error deleting quote:', err);
+        return res.status(500).json({ message: 'Internal Server Error' });
+    }
+};

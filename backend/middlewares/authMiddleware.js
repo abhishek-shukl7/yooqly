@@ -31,7 +31,7 @@ const checkAdmin = (allowedRoles) => async (req, res, next) => {
   } else {
     const decoded = result.decoded;
     let user = await redisClient.get(`auth:${decoded.userId}`);
-
+  
     if (!user) {
       // Fallback to MongoDB
       try {
@@ -79,6 +79,12 @@ const checkAdmin = (allowedRoles) => async (req, res, next) => {
 
     // Fix: Access role from the correct location in the structure
     const userRoles = userData.user.role;
+
+    if (userRoles.includes('admin')) {
+      req.user = userData;
+      return next();
+    }
+
     const hasRequiredRole = allowedRoles.some(role => userRoles.includes(role));
 
     if (hasRequiredRole) {

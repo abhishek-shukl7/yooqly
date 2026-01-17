@@ -20,7 +20,7 @@ router.post('/update-customer/:id',[
     body('customerCompanyName').isLength({ min: 1 }).withMessage('Company Name is required')
 ],checkAdmin(['order-intake']),customerController.updateCustomer);
 
-router.get('/deleteCustomer/:id',checkAdmin(['order-intake']),customerController.deleteCustomer);
+router.delete('/deleteCustomer/:id',checkAdmin(['admin']),customerController.deleteCustomer);
 
 
 module.exports = router;

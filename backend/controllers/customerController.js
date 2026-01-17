@@ -1,6 +1,9 @@
 const { validationResult } = require("express-validator");
 const customerModel = require("../models/customersModel");
 const customerService = require("../services/customerService");
+const templateWorker = require('../worker/templateWorker');
+const emailWorker = require('../services/emailWorker');
+const jobService = require('../services/jobService');
 
 module.exports.getCustomer = async (req,res,next) => {
     try {
@@ -8,7 +11,8 @@ module.exports.getCustomer = async (req,res,next) => {
         if (!customer) {
             return res.status(404).json({ message: 'customer not found.' });
         }
-        return res.status(200).json({ customer });
+        const jobCount = await jobService.getJobCountByCustomerId(req.params.id);
+        return res.status(200).json({ customer, jobCount: jobCount });
     } catch (err) {
         console.error('Error fetching customer by ID:', err);
         return res.status(500).json({ message: 'Internal Server Error' });
@@ -20,11 +24,13 @@ module.exports.createCustomer = async (req,res,next) => {
     if(!errors.isEmpty()){
         return res.status(400).json({ errors: errors.array()} );
     }
+    console.log("create customer req user:", req.user);
+    console.log("create customer req body:", req.body);
 
     const { customerEmail, customerName , customerCompanyName, phone, address } = req.body;
 
     const customerExists = await customerService.findCustomerByEmail({ customerEmail });
-
+    
     if(customerExists){
         return res.status(400).json({ message : 'customer already exists.'});
     }
@@ -37,6 +43,8 @@ module.exports.createCustomer = async (req,res,next) => {
         address: address,
         companyId: req.user.company.companyId
     });
+
+    // sendCustomerWelcomeEmail(customerName, req.user.company.companyName, customerEmail);
 
     return res.status(200).json({customer: customer});
 }
@@ -84,3 +92,14 @@ module.exports.deleteCustomer = async (req, res) => {
         return res.status(500).json({ message: 'Internal Server Error' });
     }
 };
+
+// Example: Send welcome email when customer joins
+async function sendCustomerWelcomeEmail(customerName, companyName, toEmail) {
+    const html = templateWorker.getTemplate('customerJoined', { customerName, companyName });
+    await emailWorker.sendEmail({
+        from: 'Yooqly <no-reply@yooqly.com>',
+        to: toEmail,
+        subject: 'Welcome to ' + companyName,
+        html
+    });
+}

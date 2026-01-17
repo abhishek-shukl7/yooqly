@@ -16,7 +16,7 @@ router.post('/onboarding-client',[
 ],onboardingController.sendOnboardingLink);
 
 router.post(
-    '/onboarding-client/:token',
+    '/onboarding-client/token/:token',
     [
         body('companyName').not().isEmpty().withMessage('Company name is required.'),
         body('companyEmail').isEmail().withMessage('Valid company email is required.'),
@@ -27,8 +27,5 @@ router.post(
     ],
     onboardingController.onboardClient
 );
-
-
-
 
 module.exports = router;

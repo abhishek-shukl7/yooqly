@@ -27,6 +27,7 @@ module.exports.login = async (email, password) => {
     if (!company) {
         throw new Error('Company not found.');
     }
+    console.log("company details",company);
 
     const response = { 
         token : token ,
@@ -49,6 +50,7 @@ module.exports.login = async (email, password) => {
     };
 
     await redisClient.setEx(`auth:${user._id}`,86400,JSON.stringify(response));
-
+    
+    console.log('User from Redis:', await redisClient.get(`auth:${user._id}`));
     return response;
 };
