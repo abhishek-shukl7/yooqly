@@ -138,7 +138,7 @@ module.exports.updateJobDetailStatus = async (req, res) => {
 async function sendProductionJobUpdateEmail(jobName, updateDetails, toEmail) {
     const html = templateWorker.getTemplate('productionJobUpdate', { jobName, updateDetails });
     await emailWorker.sendEmail({
-        from: 'Yooqly <no-reply@yooqly.com>',
+        from: 'testclient@hackersdaddy.com',
         to: toEmail,
         subject: 'Production Job Update: ' + jobName,
         html
