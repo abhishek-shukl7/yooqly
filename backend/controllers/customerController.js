@@ -115,7 +115,7 @@ module.exports.deleteCustomer = async (req, res) => {
 async function sendCustomerWelcomeEmail(customerName, companyName, toEmail) {
     const html = templateWorker.getTemplate('customerJoined', { customerName, companyName });
     await emailWorker.sendEmail({
-        from: 'Yooqly <no-reply@yooqly.com>',
+        from: 'testclient@hackersdaddy.com',
         to: toEmail,
         subject: 'Welcome to ' + companyName,
         html
