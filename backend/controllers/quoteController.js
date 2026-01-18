@@ -4,6 +4,7 @@ const quoteService = require("../services/quoteService");
 const customerService = require("../services/customerService");
 const templateWorker = require('../worker/templateWorker');
 const emailWorker = require('../services/emailWorker');
+const emailSettingsService = require('../services/emailSettingsService');
 const jwt = require('jsonwebtoken');
 
 module.exports.getQuote = async (req, res, next) => {
@@ -41,12 +42,15 @@ module.exports.createQuote = async (req, res, next) => {
         status // Pass status to service
     });
 
-    // Email Trigger: If created as 'sent', trigger email
+    // Email Trigger: If created as 'sent', trigger email (if enabled)
     if (status === 'sent') {
         try {
-            const customer = await customerService.getCustomerById(customerId);
-            if (customer && customer.customerEmail) {
-                sendQuoteEmail(quote._id, quote, customer.customerEmail);
+            const emailEnabled = await emailSettingsService.isEmailEnabled(req.user.company.companyId, 'quoteSent');
+            if (emailEnabled) {
+                const customer = await customerService.getCustomerById(customerId);
+                if (customer && customer.customerEmail) {
+                    sendQuoteEmail(quote._id, quote, customer.customerEmail);
+                }
             }
         } catch (err) {
             console.error('Error sending quote email on create:', err);
@@ -72,7 +76,11 @@ module.exports.quoteApproval = async (req, res, next) => {
         if (!updatedQuote) {
             return res.status(404).json({ message: 'quote not found.' });
         }
-        sendQuoteStatusEmail(id, status, updatedQuote.rejectionReason, req.user.email);
+        // Send quote status email (if enabled)
+        const emailEnabled = await emailSettingsService.isEmailEnabled(req.user.company.companyId, 'quoteStatus');
+        if (emailEnabled) {
+            sendQuoteStatusEmail(id, status, updatedQuote.rejectionReason, req.user.email);
+        }
         return res.status(200).json({ quote: updatedQuote });
     } catch (err) {
         console.error('Error updating quote:', err);
@@ -88,6 +96,25 @@ module.exports.processQuoteResponse = async (req, res) => {
     try {
         const decoded = jwt.verify(token, process.env.JWT_SECRET || 'secret_key');
         const { quoteId, action } = decoded;
+
+        // Check if quote is already processed
+        const existingQuote = await quoteService.getQuoteById(quoteId);
+        if (!existingQuote) {
+            return res.status(404).send('Quote not found.');
+        }
+
+        if (existingQuote.status === 'approved' || existingQuote.status === 'rejected') {
+            // Already processed - show info message
+            return res.send(`
+                <html>
+                    <body style="font-family: Arial; text-align: center; padding-top: 50px;">
+                        <h1 style="color: #666;">Quote Already Processed</h1>
+                        <p>This quote has already been <strong>${existingQuote.status}</strong>.</p>
+                        <p style="color: #888;">No further action is needed.</p>
+                    </body>
+                </html>
+            `);
+        }
 
         // Update quote status
         await quoteService.quoteApproval(quoteId, action);
@@ -119,12 +146,15 @@ module.exports.updateQuote = async (req, res, next) => {
             return res.status(404).json({ message: 'quote not found.' });
         }
 
-        // Trigger Email if status is changed to 'sent'
+        // Trigger Email if status is changed to 'sent' (if enabled)
         if (req.body.status === 'sent') {
             try {
-                const customer = await customerService.getCustomerById(updatedQuote.customerId);
-                if (customer && customer.customerEmail) {
-                    sendQuoteEmail(updatedQuote._id, updatedQuote, customer.customerEmail);
+                const emailEnabled = await emailSettingsService.isEmailEnabled(req.user.company.companyId, 'quoteSent');
+                if (emailEnabled) {
+                    const customer = await customerService.getCustomerById(updatedQuote.customerId);
+                    if (customer && customer.customerEmail) {
+                        sendQuoteEmail(updatedQuote._id, updatedQuote, customer.customerEmail);
+                    }
                 }
             } catch (err) {
                 console.error('Error sending quote email on update:', err);
@@ -167,17 +197,6 @@ async function sendQuoteEmail(quoteId, quoteDetails, toEmail) {
         from: 'testclient@hackersdaddy.com',
         to: toEmail,
         subject: 'Your Quote #' + quoteId,
-        html
-    });
-}
-
-// Example: Send quote status email
-async function sendQuoteStatusEmail(quoteId, status, reason, toEmail) {
-    const html = templateWorker.getTemplate('quoteStatus', { quoteId, status, reason });
-    await emailWorker.sendEmail({
-        from: 'Yooqly <no-reply@yooqly.com>',
-        to: toEmail,
-        subject: `Quote #${quoteId} ${status === 'approved' ? 'Approved' : 'Rejected'}`,
         html
     });
 }

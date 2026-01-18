@@ -3,8 +3,9 @@ const jobService = require("../services/jobService");
 const customerService = require("../services/customerService");
 const templateWorker = require('../worker/templateWorker');
 const emailWorker = require('../services/emailWorker');
+const emailSettingsService = require('../services/emailSettingsService');
 
-module.exports.getJob = async (req,res,next) => {
+module.exports.getJob = async (req, res, next) => {
     try {
         const job = await jobService.getJobById(req.params.id);
         const customer = await customerService.getCustomerById(job.customerId);
@@ -12,8 +13,8 @@ module.exports.getJob = async (req,res,next) => {
             return res.status(404).json({ message: 'Order not found.' });
         }
         const response = {
-            job : job,
-            customer : customer
+            job: job,
+            customer: customer
         }
         return res.status(200).json({ response });
     } catch (err) {
@@ -22,16 +23,18 @@ module.exports.getJob = async (req,res,next) => {
     }
 }
 
-module.exports.createJob = async (req,res,next) => {
+module.exports.createJob = async (req, res, next) => {
     const errors = validationResult(req);
-    if(!errors.isEmpty()){
-        return res.status(400).json({ errors: errors.array()} );
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
     }
 
-    const { customerId ,quantity,jobDetails,deadline,estimatedCost,priority,requirements,comments,status} = req.body;
+    const { customerId, quantity, jobDetails, deadline, estimatedCost, priority, requirements, comments, status } = req.body;
+    const companyId = req.user.company.companyId;
+
     const job = await jobService.createJob({
-        companyId : req.user.company.companyId,
-        customerId : customerId,
+        companyId: companyId,
+        customerId: customerId,
         quantity: quantity,
         userId: req.user.user.userId,
         jobDetails: jobDetails,
@@ -43,26 +46,36 @@ module.exports.createJob = async (req,res,next) => {
         estimatedCost: estimatedCost
     });
 
-    // Example: Send job created email
-    // await sendJobCreatedEmail(job.jobDetails, job, req.user.email);
+    // Send job created email to customer (if enabled)
+    const customer = await customerService.getCustomerById(customerId);
+    if (customer && customer.customerEmail) {
+        const emailEnabled = await emailSettingsService.isEmailEnabled(companyId, 'jobCreated');
+        if (emailEnabled) {
+            sendJobCreatedEmail(job, customer, customer.customerEmail);
+        }
+    }
 
-    return res.status(200).json({job: job});
+    return res.status(200).json({ job: job });
 }
 
-async function sendJobCreatedEmail(jobName, jobDetails, toEmail) {
-    const html = templateWorker.getTemplate('jobCreated', { jobName, jobDetails });
+async function sendJobCreatedEmail(job, customer, toEmail) {
+    // Generate readable job type for subject line
+    const jobTypes = (job.jobDetails || []).map(item => item.type).filter(Boolean);
+    const subjectJobType = jobTypes.length > 0 ? jobTypes.join(', ') : 'New Job';
+
+    const html = templateWorker.getTemplate('jobCreated', { job, customer });
     await emailWorker.sendEmail({
-        from: 'Yooqly <no-reply@yooqly.com>',
+        from: 'testclient@hackersdaddy.com',
         to: toEmail,
-        subject: 'New Job Created: ' + jobName,
+        subject: `New Job Created: ${subjectJobType} - Order #${job.orderId || 'N/A'}`,
         html
     });
 }
 
-module.exports.updateJob = async (req,res,next) => {
+module.exports.updateJob = async (req, res, next) => {
     const errors = validationResult(req);
-    if(!errors.isEmpty()){
-        return res.status(400).json({ errors: errors.array()} );
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
     }
 
     try {
