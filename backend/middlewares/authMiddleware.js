@@ -31,7 +31,7 @@ const checkAdmin = (allowedRoles) => async (req, res, next) => {
   } else {
     const decoded = result.decoded;
     let user = await redisClient.get(`auth:${decoded.userId}`);
-  
+
     if (!user) {
       // Fallback to MongoDB
       try {
@@ -54,6 +54,7 @@ const checkAdmin = (allowedRoles) => async (req, res, next) => {
             "companyName": company.companyName,
             "companyEmail": company.companyEmail,
             "currency": company.currency,
+            "currencySymbol": company.currencySymbol || '£',
             "timezone": company.timezone,
             "logoUrl": company.logoUrl,
             "alertSettings": company.alertSettings,
