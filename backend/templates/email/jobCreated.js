@@ -2,38 +2,38 @@
 const { styles, helpers } = require('./styles');
 
 function jobCreated({ job, customer }) {
-  // Extract job details
-  const orderId = job.orderId || 'N/A';
-  const priority = job.priority || 'Medium';
-  const quantity = job.quantity || 0;
-  const deadline = job.deadline ? new Date(job.deadline).toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric'
-  }) : 'Not set';
-  const requirements = job.requirements || '';
-  const comments = job.comments || '';
+    // Extract job details
+    const orderId = job.orderId || 'N/A';
+    const priority = job.priority || 'Medium';
+    const quantity = job.quantity || 0;
+    const deadline = job.deadline ? new Date(job.deadline).toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric'
+    }) : 'Not set';
+    const requirements = job.requirements || '';
+    const comments = job.comments || '';
 
-  // Format job details (type, subType, fields)
-  const jobDetails = job.jobDetails || [];
+    // Format job details (type, subType, fields)
+    const jobDetails = job.jobDetails || [];
 
-  // Generate job items HTML
-  const jobItemsHtml = jobDetails.map((item) => {
-    const type = item.type || 'Unknown';
-    const subType = item.subType || '';
-    const fields = item.fields || {};
+    // Generate job items HTML
+    const jobItemsHtml = jobDetails.map((item) => {
+        const type = item.type || 'Unknown';
+        const subType = item.subType || '';
+        const fields = item.fields || {};
 
-    // Format fields into readable key-value pairs
-    const fieldsHtml = Object.entries(fields)
-      .filter(([key, value]) => value && key !== '_id')
-      .map(([key, value]) => `
+        // Format fields into readable key-value pairs
+        const fieldsHtml = Object.entries(fields)
+            .filter(([key, value]) => value && key !== '_id')
+            .map(([key, value]) => `
                 <tr>
                     <td style="padding: 8px 0; color: ${styles.colors.text.muted}; font-size: 13px; width: 40%;">${key}</td>
                     <td style="padding: 8px 0; color: ${styles.colors.text.primary}; font-size: 13px; font-weight: 500;">${value}</td>
                 </tr>
             `).join('');
 
-    return `
+        return `
         <div style="background-color: ${styles.colors.background.light}; border: 1px solid ${styles.colors.border.default}; border-radius: ${styles.borderRadius.lg}; padding: 20px; margin-bottom: 16px;">
             <div style="margin-bottom: 12px;">
                 <p style="margin: 0; color: ${styles.colors.text.primary}; font-size: 15px; font-weight: 600;">${type}</p>
@@ -46,18 +46,18 @@ function jobCreated({ job, customer }) {
             ` : ''}
         </div>
         `;
-  }).join('');
+    }).join('');
 
-  // Priority color mapping
-  const priorityColors = {
-    'Low': { bg: styles.colors.accent.emerald.bg, text: styles.colors.accent.emerald.text },
-    'Medium': { bg: styles.colors.accent.blue.bg, text: styles.colors.accent.blue.text },
-    'High': { bg: styles.colors.accent.amber.bg, text: styles.colors.accent.amber.text },
-    'Urgent': { bg: styles.colors.accent.red.bg, text: styles.colors.accent.red.text }
-  };
-  const priorityStyle = priorityColors[priority] || priorityColors['Medium'];
+    // Priority color mapping
+    const priorityColors = {
+        'Low': { bg: styles.colors.accent.emerald.bg, text: styles.colors.accent.emerald.text },
+        'Medium': { bg: styles.colors.accent.blue.bg, text: styles.colors.accent.blue.text },
+        'High': { bg: styles.colors.accent.amber.bg, text: styles.colors.accent.amber.text },
+        'Urgent': { bg: styles.colors.accent.red.bg, text: styles.colors.accent.red.text }
+    };
+    const priorityStyle = priorityColors[priority] || priorityColors['Medium'];
 
-  return `
+    return `
     <div style="${helpers.container()}">
         <!-- Logo Header -->
         ${helpers.logoHeader()}
@@ -92,11 +92,23 @@ function jobCreated({ job, customer }) {
             ${jobItemsHtml}
         </div>
 
+        <!-- Requirements -->
+        ${requirements ? `
+        <div style="background-color: ${styles.colors.background.light}; border: 1px solid ${styles.colors.border.default}; border-radius: ${styles.borderRadius.lg}; padding: 20px; margin-bottom: 24px;">
+            <p style="${helpers.label()}">Requirements</p>
+            <div style="color: ${styles.colors.text.primary}; font-size: 14px; line-height: 1.6; margin: 8px 0 0;">
+                ${requirements.split(/\r?\n/).map((line) => `<span style="display: block; margin: 4px 0;">${line}</span>`).join('')}
+            </div>
+        </div>
+        ` : ''}
+
         <!-- Comments -->
         ${comments ? `
         <div style="background-color: ${styles.colors.accent.amber.bg}; border: 1px solid ${styles.colors.border.default}; border-radius: ${styles.borderRadius.lg}; padding: 20px; margin-bottom: 24px;">
             <p style="${helpers.label()}">Comments</p>
-            <p style="color: ${styles.colors.accent.amber.text}; font-size: 14px; line-height: 1.6; margin: 8px 0 0;">${comments}</p>
+            <div style="color: ${styles.colors.accent.amber.text}; font-size: 14px; line-height: 1.6; margin: 8px 0 0;">
+                ${comments.split(/\r?\n/).map((line) => `<span style="display: block; margin: 4px 0;">${line}</span>`).join('')}
+            </div>
         </div>
         ` : ''}
 

@@ -3,6 +3,7 @@ const productionJobService = require('../services/productionJobService');
 const templateWorker = require('../worker/templateWorker');
 const emailWorker = require('../services/emailWorker');
 const emailSettingsService = require('../services/emailSettingsService');
+const customerService = require('../services/customerService');
 
 module.exports.getProductionJob = async (req, res) => {
     try {
@@ -117,11 +118,68 @@ module.exports.updateJobDetailStatus = async (req, res) => {
 
         // Send production update email (if enabled)
         const emailEnabled = await emailSettingsService.isEmailEnabled(req.user.company.companyId, 'productionUpdate');
-        if (emailEnabled && req.user.email) {
-            // Get job name for email
+        if (emailEnabled) {
+            // Get job name and customer email
             const productionJob = await productionJobService.getProductionJobById(productionJobId);
-            const jobName = productionJob?.jobDetails?.type || 'Production Job';
-            sendProductionJobUpdateEmail(jobName, `Status updated to: ${status}`, req.user.email);
+
+            if (productionJob) {
+                const customer = await customerService.getCustomerById(productionJob.customerId);
+
+                if (customer && customer.customerEmail) {
+                    const detail = productionJob.jobDetails.find(d => d.lineItemId === lineItemId);
+                    const jobName = detail ? (detail.type || 'Production Job') : 'Production Job';
+
+                    const emailData = {
+                        lineItemId: detail.lineItemId,
+                        status: status,
+                        completed: completed !== undefined ? completed : detail.completed,
+                        quantity: detail.fields?.Quantity || detail.fields?.quantity || 'N/A',
+                        deadline: productionJob.productionDeadline
+                    };
+
+                    sendProductionJobUpdateEmail(jobName, productionJob.orderId, `Status updated to: ${status}`, customer.customerEmail, emailData);
+                }
+            }
+        }
+
+        // Check if all items are completed
+        // Fetch job again to be sure we have latest status (it was fetched above inside if (emailEnabled), but scope issues)
+        // Better to lift productionJob fetch out if possible, but let's just use what we have or refetch if needed.
+        // Actually, let's just refetch to be clean and safe, or check if we can reuse.
+        // To avoid code duplication, I'll refetch/use cleanly.
+
+        const productionJobForCheck = await productionJobService.getProductionJobById(productionJobId);
+        if (productionJobForCheck) {
+            const allCompleted = productionJobForCheck.jobDetails.every(d => (d.status || '').toLowerCase() === 'completed');
+
+            // If all completed AND main status is not yet 'Completed'
+            if (allCompleted && productionJobForCheck.productionStatus !== 'Completed') {
+                const completedEmailEnabled = await emailSettingsService.isEmailEnabled(req.user.company.companyId, 'productionCompleted');
+
+                if (completedEmailEnabled) {
+                    const customer = await customerService.getCustomerById(productionJobForCheck.customerId);
+                    if (customer && customer.customerEmail) {
+                        sendProductionCompletedEmail(
+                            productionJobForCheck.orderId,
+                            productionJobForCheck.jobDetails,
+                            customer.customerEmail,
+                            customer.customerName || customer.firstName
+                        );
+
+                        // Update Main Status to Completed
+                        // Use updateProductionJob service or direct model update?
+                        // Let's use service if possible, or just update doc.
+                        await productionJobService.updateProductionJob(productionJobId, { productionStatus: 'Completed' });
+
+                        // Also update main JOB status? logic exists in updateProductionJob controller but not service?
+                        // To be enabling, I should call the controller logic or replicate it.
+                        // Simpler: Just update production job status for now.
+                        // If I want to trigger the side-effects of main job update, calling controller function directly is messy.
+                        // I'll leave the main main Job status (Order status) alone for now unless requested,
+                        // but I WILL update productionJob.productionStatus.
+                    }
+                }
+            }
         }
 
         return res.status(200).json({ jobDetails });
@@ -135,12 +193,22 @@ module.exports.updateJobDetailStatus = async (req, res) => {
 };
 
 // Example: Send production job update email
-async function sendProductionJobUpdateEmail(jobName, updateDetails, toEmail) {
-    const html = templateWorker.getTemplate('productionJobUpdate', { jobName, updateDetails });
+async function sendProductionJobUpdateEmail(jobName, orderId, updateDetails, toEmail, additionalData = {}) {
+    const html = templateWorker.getTemplate('productionJobUpdate', { jobName, updateDetails, ...additionalData });
     await emailWorker.sendEmail({
         from: 'testclient@hackersdaddy.com',
         to: toEmail,
-        subject: 'Production Job Update: ' + jobName,
+        subject: `Production Job Update - Order #${orderId}`,
+        html
+    });
+}
+
+async function sendProductionCompletedEmail(orderId, items, toEmail, customerName) {
+    const html = templateWorker.getTemplate('productionCompleted', { orderId, items, customerName });
+    await emailWorker.sendEmail({
+        from: 'testclient@hackersdaddy.com',
+        to: toEmail,
+        subject: `Production Completed - Order #${orderId}`,
         html
     });
 }

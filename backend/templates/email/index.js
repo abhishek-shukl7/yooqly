@@ -5,7 +5,9 @@ const customerJoined = require('./customerJoined');
 const jobCreated = require('./jobCreated');
 const sendQuote = require('./sendQuote');
 const quoteStatus = require('./quoteStatus');
+const quoteApprovedProduction = require('./quoteApprovedProduction');
 const productionUpdate = require('./productionUpdate');
+const productionCompleted = require('./productionCompleted');
 const userRegistered = require('./userRegistered');
 
 const templates = {
@@ -13,7 +15,9 @@ const templates = {
   jobCreated,
   sendQuote,
   quoteStatus,
+  quoteApprovedProduction,
   productionJobUpdate: productionUpdate, // Alias for backward compatibility
+  productionCompleted,
   userRegistered
 };
 

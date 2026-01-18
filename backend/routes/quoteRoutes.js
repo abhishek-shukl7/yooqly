@@ -45,5 +45,6 @@ router.post('/quote-approval', [
 
 // Public route for Magic Link response
 router.get('/respond', quoteController.processQuoteResponse);
+router.post('/respond', quoteController.processQuoteResponse);
 
 module.exports = router;

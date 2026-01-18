@@ -7,7 +7,7 @@ const mongoose = require('mongoose');
 const quoteModel = require('../models/quoteModel');
 
 // REPLACE THIS WITH THE QUOTE ID YOU WANT TO DELETE
-const QUOTE_ID = '69669c4cc9cfa45c9487048c';
+const QUOTE_ID = '696cdf960c0d64f745691ad5';
 
 async function deleteQuote() {
   if (QUOTE_ID === 'REPLACE_WITH_QUOTE_ID') {

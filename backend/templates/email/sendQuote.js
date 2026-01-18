@@ -54,7 +54,9 @@ function sendQuote({ quoteId, quote, approveLink, rejectLink, currencySymbol = '
             ${quote.terms ? `
             <div style="margin-top: 20px; padding-top: 16px; border-top: 1px solid ${styles.colors.border.default};">
                 <p style="${helpers.label()}">Terms & Conditions</p>
-                <p style="color: ${styles.colors.text.secondary}; font-size: 13px; line-height: 1.5; margin: 6px 0 0;">${quote.terms}</p>
+                <div style="color: ${styles.colors.text.secondary}; font-size: 13px; line-height: 1.5; margin: 6px 0 0;">
+                    ${quote.terms.split(/\r?\n/).map(line => `<span style="display: block; margin-bottom: 4px;">${line}</span>`).join('')}
+                </div>
             </div>
             ` : ''}
         </div>

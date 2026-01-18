@@ -10,6 +10,7 @@ const defaultEmailSettings = {
   customerWelcome: true,
   userRegistered: true,
   productionUpdate: true,
+  productionCompleted: true,
   onboarding: true
 };
 

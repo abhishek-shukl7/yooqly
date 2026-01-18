@@ -18,6 +18,7 @@ const companySchema = new Schema({
         customerWelcome: { type: Boolean, default: true },
         userRegistered: { type: Boolean, default: true },
         productionUpdate: { type: Boolean, default: true },
+        productionCompleted: { type: Boolean, default: true },
         onboarding: { type: Boolean, default: true }
     }
 }, { timestamps: true });
