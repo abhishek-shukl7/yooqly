@@ -1,16 +1,16 @@
 // Send Quote Email Template
 const { styles, helpers } = require('./styles');
 
-function sendQuote({ quoteId, quote, approveLink, rejectLink }) {
-  const itemsRows = quote.quoteItems.map(item => `
+function sendQuote({ quoteId, quote, approveLink, rejectLink, currencySymbol = '£' }) {
+    const itemsRows = quote.quoteItems.map(item => `
         <tr>
             <td style="padding: 14px 0; border-bottom: 1px solid ${styles.colors.border.light}; color: ${styles.colors.text.primary}; font-size: 14px;">${item.itemName}</td>
-            <td style="padding: 14px 0; border-bottom: 1px solid ${styles.colors.border.light}; color: ${styles.colors.text.muted}; font-size: 14px; text-align: right;">$${item.unitPrice}</td>
-            <td style="padding: 14px 0; border-bottom: 1px solid ${styles.colors.border.light}; color: ${styles.colors.text.primary}; font-size: 14px; font-weight: 500; text-align: right;">$${item.totalPrice}</td>
+            <td style="padding: 14px 0; border-bottom: 1px solid ${styles.colors.border.light}; color: ${styles.colors.text.muted}; font-size: 14px; text-align: right;">${currencySymbol}${item.unitPrice}</td>
+            <td style="padding: 14px 0; border-bottom: 1px solid ${styles.colors.border.light}; color: ${styles.colors.text.primary}; font-size: 14px; font-weight: 500; text-align: right;">${currencySymbol}${item.totalPrice}</td>
         </tr>
     `).join('');
 
-  return `
+    return `
     <div style="${helpers.container()}">
         <!-- Logo Header -->
         ${helpers.logoHeader()}
@@ -46,7 +46,7 @@ function sendQuote({ quoteId, quote, approveLink, rejectLink }) {
                     </tr>
                     <tr>
                         <td style="color: ${styles.colors.text.primary}; font-size: 16px; font-weight: 600; padding-top: 8px;">Total</td>
-                        <td style="color: ${styles.colors.text.primary}; font-size: 20px; font-weight: 600; text-align: right; padding-top: 8px;">$${quote.quoteTotal}</td>
+                        <td style="color: ${styles.colors.text.primary}; font-size: 20px; font-weight: 600; text-align: right; padding-top: 8px;">${currencySymbol}${quote.quoteTotal}</td>
                     </tr>
                 </table>
             </div>

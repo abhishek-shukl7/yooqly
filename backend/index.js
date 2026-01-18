@@ -26,6 +26,7 @@ const productionJobRoutes = require('./routes/productionJobRoutes');
 const authRoutes = require('./routes/authRoutes');
 const onboardingRoutes = require('./routes/onboardingRoutes');
 const emailSettingsRoutes = require('./routes/emailSettingsRoutes');
+const currencyRoutes = require('./routes/currencyRoutes');
 const test = require('./routes/test');
 
 // Validate environment variables
@@ -111,6 +112,7 @@ app.use('/api/jobType', jobTypeRoutes);
 app.use('/api/quotes', quoteRoutes);
 app.use('/api/invoice', invoiceRoutes);
 app.use('/api/productionJobs', productionJobRoutes);
+app.use('/api/currency', currencyRoutes);
 
 app.use('/api/auth', authRoutes);
 app.use('/api/onboarding', onboardingRoutes);

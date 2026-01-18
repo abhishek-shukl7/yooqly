@@ -6,7 +6,8 @@ const companySchema = new Schema({
     companyEmail: { type: String, required: true, unique: true, minlength: [5, 'Email must be at least 5 characters long'], },
     logoUrl: { type: String },
     timezone: { type: String },
-    currency: { type: String, required: true },
+    currency: { type: String, required: true, default: 'GBP' },
+    currencySymbol: { type: String, default: '£' },
     isActive: { type: Boolean, default: true },
     alertSettings: { type: Object },
     emailSettings: {

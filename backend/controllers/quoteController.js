@@ -49,7 +49,7 @@ module.exports.createQuote = async (req, res, next) => {
             if (emailEnabled) {
                 const customer = await customerService.getCustomerById(customerId);
                 if (customer && customer.customerEmail) {
-                    sendQuoteEmail(quote._id, quote, customer.customerEmail);
+                    sendQuoteEmail(quote._id, quote, customer.customerEmail, req.user.company.currencySymbol);
                 }
             }
         } catch (err) {
@@ -153,7 +153,7 @@ module.exports.updateQuote = async (req, res, next) => {
                 if (emailEnabled) {
                     const customer = await customerService.getCustomerById(updatedQuote.customerId);
                     if (customer && customer.customerEmail) {
-                        sendQuoteEmail(updatedQuote._id, updatedQuote, customer.customerEmail);
+                        sendQuoteEmail(updatedQuote._id, updatedQuote, customer.customerEmail, req.user.company.currencySymbol);
                     }
                 }
             } catch (err) {
@@ -179,11 +179,11 @@ module.exports.getAllQuotes = async (req, res) => {
     }
 };
 
-// Example: Send quote email
-async function sendQuoteEmail(quoteId, quoteDetails, toEmail) {
+// Send quote email with currency symbol
+async function sendQuoteEmail(quoteId, quoteDetails, toEmail, currencySymbol = '£') {
     // Generate Magic Links
     const secret = process.env.JWT_SECRET || 'secret_key';
-    const baseUrl = process.env.API_BASE_URL || 'http://localhost:3001'; // TODO: Use env variable for production URL
+    const baseUrl = process.env.API_BASE_URL || 'http://localhost:3001';
 
     const approveToken = jwt.sign({ quoteId, action: 'approved' }, secret, { expiresIn: '7d' });
     const rejectToken = jwt.sign({ quoteId, action: 'rejected' }, secret, { expiresIn: '7d' });
@@ -191,7 +191,7 @@ async function sendQuoteEmail(quoteId, quoteDetails, toEmail) {
     const approveLink = `${baseUrl}/api/quotes/respond?token=${approveToken}`;
     const rejectLink = `${baseUrl}/api/quotes/respond?token=${rejectToken}`;
 
-    const html = templateWorker.getTemplate('sendQuote', { quoteId, quote: quoteDetails, approveLink, rejectLink });
+    const html = templateWorker.getTemplate('sendQuote', { quoteId, quote: quoteDetails, approveLink, rejectLink, currencySymbol });
 
     await emailWorker.sendEmail({
         from: 'testclient@hackersdaddy.com',
