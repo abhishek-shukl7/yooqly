@@ -170,7 +170,7 @@ module.exports.processQuoteResponse = async (req, res) => {
 
             return res.send(renderStyledPage(`Confirm ${actionText}`, `
                 <h1>Confirm ${actionText}?</h1>
-                <p>You are about to <strong>${action}</strong> Quote #${existingQuote.orderId}.</p>
+                <p>You are about to <strong>${action}</strong> Quote #${existingQuote.id || existingQuote.orderId}.</p>
                 <p style="margin-bottom: 32px;">Total Amount: <strong>${req.user?.company?.currencySymbol || ''}${existingQuote.quoteTotal}</strong></p>
 
                 <form action="/api/quotes/respond" method="POST">
@@ -296,8 +296,8 @@ async function sendQuoteEmail(quoteId, quoteDetails, toEmail, currencySymbol = '
     const secret = process.env.JWT_SECRET || 'secret_key';
     const baseUrl = process.env.API_BASE_URL || 'http://localhost:3001';
 
-    const approveToken = jwt.sign({ quoteId, action: 'approved', type: 'quote_approval' }, secret, { expiresIn: '7d' });
-    const rejectToken = jwt.sign({ quoteId, action: 'rejected', type: 'quote_approval' }, secret, { expiresIn: '7d' });
+    const approveToken = jwt.sign({ quoteId, action: 'approved', type: 'quote_approval' }, secret, { expiresIn: '2d' });
+    const rejectToken = jwt.sign({ quoteId, action: 'rejected', type: 'quote_approval' }, secret, { expiresIn: '2d' });
 
     const approveLink = `${baseUrl}/api/quotes/respond?token=${approveToken}`;
     const rejectLink = `${baseUrl}/api/quotes/respond?token=${rejectToken}`;
