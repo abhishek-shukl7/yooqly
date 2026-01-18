@@ -3,6 +3,7 @@ const customerModel = require("../models/customersModel");
 const customerService = require("../services/customerService");
 const templateWorker = require('../worker/templateWorker');
 const emailWorker = require('../services/emailWorker');
+const emailSettingsService = require('../services/emailSettingsService');
 const jobService = require('../services/jobService');
 
 module.exports.getCustomer = async (req, res, next) => {
@@ -28,6 +29,7 @@ module.exports.createCustomer = async (req, res, next) => {
     console.log("create customer req body:", req.body);
 
     const { customerEmail, customerName, customerCompanyName, phone, address } = req.body;
+    const companyId = req.user.company.companyId;
 
     const customerExists = await customerService.findCustomerByEmail({ customerEmail });
 
@@ -41,10 +43,14 @@ module.exports.createCustomer = async (req, res, next) => {
         customerCompanyName: customerCompanyName,
         phone: phone,
         address: address,
-        companyId: req.user.company.companyId
+        companyId: companyId
     });
 
-    // sendCustomerWelcomeEmail(customerName, req.user.company.companyName, customerEmail);
+    // Send welcome email (if enabled)
+    const emailEnabled = await emailSettingsService.isEmailEnabled(companyId, 'customerWelcome');
+    if (emailEnabled && customerEmail) {
+        sendCustomerWelcomeEmail(customerName, req.user.company.companyName, customerEmail);
+    }
 
     return res.status(200).json({ customer: customer });
 }

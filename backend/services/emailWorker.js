@@ -27,10 +27,17 @@ const transporter = nodemailer.createTransport({
  * @returns {Promise<Object>} - Nodemailer response
  */
 async function sendEmail({ from = process.env.EMAIL_USER_FROM, to, subject, html }) {
+    // Validate recipient
+    if (!to) {
+        console.warn('sendEmail: No recipient defined, skipping email');
+        return null;
+    }
+
     try {
         const info = await transporter.sendMail({ from, to, subject, html });
         return info;
     } catch (error) {
+        console.log(error);
         throw error;
     }
 }

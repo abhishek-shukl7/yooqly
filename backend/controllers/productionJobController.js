@@ -2,6 +2,7 @@ const { validationResult } = require('express-validator');
 const productionJobService = require('../services/productionJobService');
 const templateWorker = require('../worker/templateWorker');
 const emailWorker = require('../services/emailWorker');
+const emailSettingsService = require('../services/emailSettingsService');
 
 module.exports.getProductionJob = async (req, res) => {
     try {
@@ -113,7 +114,16 @@ module.exports.updateJobDetailStatus = async (req, res) => {
     const { lineItemId, status, completed, priority } = req.body;
     try {
         const jobDetails = await productionJobService.updateJobDetailStatus(productionJobId, { lineItemId, status, completed, priority });
-        // sendProductionJobUpdateEmail(jobName, jobDetails, req.user.email);
+
+        // Send production update email (if enabled)
+        const emailEnabled = await emailSettingsService.isEmailEnabled(req.user.company.companyId, 'productionUpdate');
+        if (emailEnabled && req.user.email) {
+            // Get job name for email
+            const productionJob = await productionJobService.getProductionJobById(productionJobId);
+            const jobName = productionJob?.jobDetails?.type || 'Production Job';
+            sendProductionJobUpdateEmail(jobName, `Status updated to: ${status}`, req.user.email);
+        }
+
         return res.status(200).json({ jobDetails });
     } catch (err) {
         console.error('Error updating job detail status:', err);

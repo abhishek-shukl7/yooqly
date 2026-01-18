@@ -25,6 +25,7 @@ const productionJobRoutes = require('./routes/productionJobRoutes');
 
 const authRoutes = require('./routes/authRoutes');
 const onboardingRoutes = require('./routes/onboardingRoutes');
+const emailSettingsRoutes = require('./routes/emailSettingsRoutes');
 const test = require('./routes/test');
 
 // Validate environment variables
@@ -62,7 +63,7 @@ app.use(helmet());
 // Rate limiting
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // limit each IP to 100 requests per windowMs
+  max: 1000, // limit each IP to 1000 requests per windowMs
   message: 'Too many requests from this IP, please try again later'
 });
 app.use(limiter);
@@ -93,6 +94,10 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
+// Serve static files (images, etc.)
+const path = require('path');
+app.use('/images', express.static(path.join(__dirname, 'public/images')));
+
 app.get('/', (req, res) => {
   res.send('Hello, World!');
 });
@@ -109,6 +114,7 @@ app.use('/api/productionJobs', productionJobRoutes);
 
 app.use('/api/auth', authRoutes);
 app.use('/api/onboarding', onboardingRoutes);
+app.use('/api/settings/email', emailSettingsRoutes);
 
 app.use('/api/test', test);
 
