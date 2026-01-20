@@ -41,7 +41,7 @@ function sendQuote({ quoteId, quote, approveLink, rejectLink, currencySymbol = '
             <div style="margin-top: 20px; padding-top: 16px; border-top: 1px solid ${styles.colors.border.default};">
                 <table style="width: 100%;">
                     <tr>
-                        <td style="color: ${styles.colors.text.muted}; font-size: 14px;">Tax</td>
+                        <td style="color: ${styles.colors.text.muted}; font-size: 14px;">VAT</td>
                         <td style="color: ${styles.colors.text.secondary}; font-size: 14px; text-align: right;">${quote.tax}%</td>
                     </tr>
                     <tr>

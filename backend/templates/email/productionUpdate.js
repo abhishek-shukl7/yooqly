@@ -1,7 +1,7 @@
 // Production Update Email Template
 const { styles, helpers } = require('./styles');
 
-function productionUpdate({ jobName, updateDetails, lineItemId, status, completed, quantity, deadline }) {
+function productionUpdate({ jobName, updateDetails, lineItemId, status, completed, quantity, deadline, jobType, subType }) {
     const formattedDeadline = deadline ? new Date(deadline).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'N/A';
 
     // Status color mapping (Tailwind to Hex)
@@ -27,9 +27,25 @@ function productionUpdate({ jobName, updateDetails, lineItemId, status, complete
         <!-- Title -->
         <div style="text-align: center; margin-bottom: 24px;">
             <h1 style="color: ${styles.colors.text.primary}; font-size: 22px; font-weight: 600; margin: 0;">Production Update</h1>
-            <p style="${helpers.value()} margin-top: 8px;">${jobName}</p>
             ${lineItemId ? `<span style="${helpers.badge(styles.colors.background.muted, styles.colors.text.muted)} margin-top: 8px;">${lineItemId}</span>` : ''}
         </div>
+
+        <!-- Job Type Info -->
+        ${(jobType || subType) ? `
+        <div style="${helpers.card()} margin-bottom: 24px;">
+            <table style="width: 100%; border-collapse: collapse;">
+                ${jobType ? `
+                <tr>
+                    <td style="padding: 8px 0; ${helpers.label()} width: 120px;">Job Type</td>
+                    <td style="padding: 8px 0; color: ${styles.colors.text.primary}; font-size: 14px; font-weight: 500;">${jobType}</td>
+                </tr>` : ''}
+                ${subType ? `
+                <tr>
+                    <td style="padding: 8px 0; ${helpers.label()} width: 120px;">Sub Type</td>
+                    <td style="padding: 8px 0; color: ${styles.colors.text.primary}; font-size: 14px; font-weight: 500;">${subType}</td>
+                </tr>` : ''}
+            </table>
+        </div>` : ''}
 
         <!-- Detail Table -->
         <div style="margin-bottom: 24px; border: 1px solid ${styles.colors.border.default}; border-radius: ${styles.borderRadius.lg}; overflow: hidden;">

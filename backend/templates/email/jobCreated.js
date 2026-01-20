@@ -92,16 +92,6 @@ function jobCreated({ job, customer }) {
             ${jobItemsHtml}
         </div>
 
-        <!-- Requirements -->
-        ${requirements ? `
-        <div style="background-color: ${styles.colors.background.light}; border: 1px solid ${styles.colors.border.default}; border-radius: ${styles.borderRadius.lg}; padding: 20px; margin-bottom: 24px;">
-            <p style="${helpers.label()}">Requirements</p>
-            <div style="color: ${styles.colors.text.primary}; font-size: 14px; line-height: 1.6; margin: 8px 0 0;">
-                ${requirements.split(/\r?\n/).map((line) => `<span style="display: block; margin: 4px 0;">${line}</span>`).join('')}
-            </div>
-        </div>
-        ` : ''}
-
         <!-- Comments -->
         ${comments ? `
         <div style="background-color: ${styles.colors.accent.amber.bg}; border: 1px solid ${styles.colors.border.default}; border-radius: ${styles.borderRadius.lg}; padding: 20px; margin-bottom: 24px;">
