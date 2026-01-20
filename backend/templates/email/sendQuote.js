@@ -17,7 +17,7 @@ function sendQuote({ quoteId, quote, approveLink, rejectLink, currencySymbol = '
 
         <!-- Title -->
         <div style="text-align: center; margin-bottom: 24px;">
-            <span style="${helpers.badge(styles.colors.text.primary, styles.colors.background.white)} letter-spacing: 0.5px;">QUOTE #${quote.orderId || quoteId}</span>
+            <span style="${helpers.badge(styles.colors.text.primary, styles.colors.background.white)} letter-spacing: 0.5px;">QUOTE #${quoteId || quote.orderId}</span>
         </div>
 
         <p style="${helpers.body()} text-align: center; margin-bottom: 24px;">You have received a new quote. Please review the details below.</p>
@@ -41,7 +41,7 @@ function sendQuote({ quoteId, quote, approveLink, rejectLink, currencySymbol = '
             <div style="margin-top: 20px; padding-top: 16px; border-top: 1px solid ${styles.colors.border.default};">
                 <table style="width: 100%;">
                     <tr>
-                        <td style="color: ${styles.colors.text.muted}; font-size: 14px;">Tax</td>
+                        <td style="color: ${styles.colors.text.muted}; font-size: 14px;">VAT</td>
                         <td style="color: ${styles.colors.text.secondary}; font-size: 14px; text-align: right;">${quote.tax}%</td>
                     </tr>
                     <tr>

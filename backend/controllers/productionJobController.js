@@ -134,7 +134,9 @@ module.exports.updateJobDetailStatus = async (req, res) => {
                         status: status,
                         completed: completed !== undefined ? completed : detail.completed,
                         quantity: detail.fields?.Quantity || detail.fields?.quantity || 'N/A',
-                        deadline: productionJob.productionDeadline
+                        deadline: productionJob.productionDeadline,
+                        jobType: detail.type,
+                        subType: detail.subType
                     };
 
                     sendProductionJobUpdateEmail(jobName, productionJob.orderId, `Status updated to: ${status}`, customer.customerEmail, emailData);
