@@ -2,7 +2,7 @@ const { validationResult } = require("express-validator");
 const companyModel = require("../models/companyModel");
 const companyService = require("../services/companyService");
 
-module.exports.getCompany = async (req,res,next) => {
+module.exports.getCompany = async (req, res, next) => {
     try {
         const company = await companyService.getCompanyById(req.params.id);
         if (!company) {
@@ -15,35 +15,37 @@ module.exports.getCompany = async (req,res,next) => {
     }
 }
 
-module.exports.createCompany = async (req,res,next) => {
+module.exports.createCompany = async (req, res, next) => {
     const errors = validationResult(req);
-    if(!errors.isEmpty()){
-        return res.status(400).json({ errors: errors.array()} );
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
     }
 
-    const { companyEmail, companyName , currency , logoUrl,timezone,alertSettings} = req.body;
-    const companyExists = await companyService.findCompanyByEmail({ companyEmail });
+    const { companyEmail, companyName, currency, logoUrl, timezone, alertSettings } = req.body;
+    const companyExists = await companyService.findCompanyByEmail(companyEmail);
 
-    if(companyExists){
-        return res.status(400).json({ message : 'Company already exists.'});
+    if (companyExists) {
+        return res.status(400).json({ message: 'Company already exists.' });
     }
     const company = await companyService.createCompany({
-        companyEmail : companyEmail,
-        companyName : companyName,
-        currency: currency,
-        logoUrl: logoUrl,
-        timezone: timezone,
-        alertSettings: alertSettings
+        companyData: {
+            companyEmail: companyEmail,
+            companyName: companyName,
+            currency: currency,
+            logoUrl: logoUrl,
+            timezone: timezone,
+            alertSettings: alertSettings
+        }
     });
 
-    return res.status(200).json({company: company});
+    return res.status(200).json({ company: company });
 }
 
 
-module.exports.updateCompany = async (req,res,next) => {
+module.exports.updateCompany = async (req, res, next) => {
     const errors = validationResult(req);
-    if(!errors.isEmpty()){
-        return res.status(400).json({ errors: errors.array()} );
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
     }
 
     try {

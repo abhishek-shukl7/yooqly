@@ -116,34 +116,6 @@ module.exports.updateJobDetailStatus = async (req, res) => {
     try {
         const jobDetails = await productionJobService.updateJobDetailStatus(productionJobId, { lineItemId, status, completed, priority });
 
-        // Send production update email (if enabled)
-        const emailEnabled = await emailSettingsService.isEmailEnabled(req.user.company.companyId, 'productionUpdate');
-        if (emailEnabled) {
-            // Get job name and customer email
-            const productionJob = await productionJobService.getProductionJobById(productionJobId);
-
-            if (productionJob) {
-                const customer = await customerService.getCustomerById(productionJob.customerId);
-
-                if (customer && customer.customerEmail) {
-                    const detail = productionJob.jobDetails.find(d => d.lineItemId === lineItemId);
-                    const jobName = detail ? (detail.type || 'Production Job') : 'Production Job';
-
-                    const emailData = {
-                        lineItemId: detail.lineItemId,
-                        status: status,
-                        completed: completed !== undefined ? completed : detail.completed,
-                        quantity: detail.fields?.Quantity || detail.fields?.quantity || 'N/A',
-                        deadline: productionJob.productionDeadline,
-                        jobType: detail.type,
-                        subType: detail.subType
-                    };
-
-                    sendProductionJobUpdateEmail(jobName, productionJob.orderId, `Status updated to: ${status}`, customer.customerEmail, emailData);
-                }
-            }
-        }
-
         // Check if all items are completed
         // Fetch job again to be sure we have latest status (it was fetched above inside if (emailEnabled), but scope issues)
         // Better to lift productionJob fetch out if possible, but let's just use what we have or refetch if needed.
@@ -194,17 +166,8 @@ module.exports.updateJobDetailStatus = async (req, res) => {
     }
 };
 
-// Example: Send production job update email
-async function sendProductionJobUpdateEmail(jobName, orderId, updateDetails, toEmail, additionalData = {}) {
-    const html = templateWorker.getTemplate('productionJobUpdate', { jobName, updateDetails, ...additionalData });
-    await emailWorker.sendEmail({
-        from: 'testclient@hackersdaddy.com',
-        to: toEmail,
-        subject: `Production Job Update - Order #${orderId}`,
-        html
-    });
-}
 
+// Send production completed email
 async function sendProductionCompletedEmail(orderId, items, toEmail, customerName) {
     const html = templateWorker.getTemplate('productionCompleted', { orderId, items, customerName });
     await emailWorker.sendEmail({

@@ -30,7 +30,7 @@ router.post('/', checkAdmin(['admin']), async (req, res) => {
     const settings = req.body;
 
     // Validate that only allowed fields are being updated
-    const allowedFields = ['enabled', 'jobCreated', 'quoteSent', 'quoteStatus', 'customerWelcome', 'userRegistered', 'productionUpdate', 'onboarding'];
+    const allowedFields = ['enabled', 'jobCreated', 'quoteSent', 'quoteStatus', 'customerWelcome', 'userRegistered', 'onboarding'];
     const filteredSettings = {};
 
     for (const field of allowedFields) {

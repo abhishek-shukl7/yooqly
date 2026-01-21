@@ -1,7 +1,7 @@
 const userModel = require('../models/usersModel');
 
 module.exports.createuser = async ({ userData }) => {
-    if(!userData.email || !userData.name || !userData.password || !userData.role || !userData.companyId){
+    if (!userData.email || !userData.name || !userData.passwordHash || !userData.role || !userData.companyId) {
         throw new Error('Required fields are missing.');
     }
 
@@ -17,7 +17,7 @@ module.exports.findUserByEmail = async (email) => {
     return await userModel.findOne({ email });
 };
 
-module.exports.getAllUsers= async () => {
+module.exports.getAllUsers = async () => {
     return await userModel.find();
 };
 
