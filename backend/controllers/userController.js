@@ -24,7 +24,7 @@ module.exports.createUser = async (req, res, next) => {
     }
 
     const { email, name, role, companyId, password } = req.body;
-    const userExists = await userService.findUserByEmail({ userEmail });
+    const userExists = await userService.findUserByEmail(email);
 
     if (userExists) {
         return res.status(400).json({ message: 'user already exists.' });
@@ -33,11 +33,13 @@ module.exports.createUser = async (req, res, next) => {
     const hashedPwd = await userModel.hashPwd(password);
 
     const user = await userService.createuser({
-        email: email,
-        name: name,
-        role: role,
-        companyId: companyId,
-        password: hashedPwd
+        userData: {
+            email: email,
+            name: name,
+            role: role,
+            companyId: companyId,
+            passwordHash: hashedPwd
+        }
     });
 
     const token = user.generateAuthToken();
@@ -56,7 +58,13 @@ module.exports.updateUser = async (req, res, next) => {
     }
 
     try {
-        const updatedUser = await userService.updateUser(req.params.id, req.body);
+        const updateData = { ...req.body };
+        if (updateData.password) {
+            updateData.passwordHash = await userModel.hashPwd(updateData.password);
+            delete updateData.password;
+        }
+
+        const updatedUser = await userService.updateUser(req.params.id, updateData);
         if (!updatedUser) {
             return res.status(404).json({ message: 'user not found.' });
         }

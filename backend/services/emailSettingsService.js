@@ -9,7 +9,6 @@ const defaultEmailSettings = {
   quoteStatus: true,
   customerWelcome: true,
   userRegistered: true,
-  productionUpdate: true,
   productionCompleted: true,
   onboarding: true
 };
@@ -52,7 +51,7 @@ async function updateEmailSettings(companyId, settings) {
 /**
  * Check if a specific email type is enabled for a company
  * @param {string} companyId
- * @param {string} emailType - One of: jobCreated, quoteSent, quoteStatus, customerWelcome, userRegistered, productionUpdate, onboarding
+ * @param {string} emailType - One of: jobCreated, quoteSent, quoteStatus, customerWelcome, userRegistered, onboarding
  * @returns {boolean}
  */
 async function isEmailEnabled(companyId, emailType) {

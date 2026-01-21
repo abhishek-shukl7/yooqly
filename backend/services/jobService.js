@@ -1,31 +1,31 @@
 const jobModel = require('../models/jobModel');
 const jobTypeModel = require('../models/jobTypeModel');
- const counters = require('../models/counterModel');
- const mongoose = require('mongoose');
+const counters = require('../models/counterModel');
+const mongoose = require('mongoose');
 
-module.exports.createJob = async ({ companyId,customerId,quantity,userId ,jobDetails,deadline,status,priority,requirements,comments,estimatedCost}) => {
-    if(!userId || !quantity|| !requirements || !jobDetails || !customerId || !deadline || !userId || !companyId || !status || !priority || !estimatedCost || !comments){
+module.exports.createJob = async ({ companyId, customerId, quantity, userId, jobDetails, deadline, status, priority, requirements, comments, estimatedCost }) => {
+    if (!userId || !quantity || !requirements || !jobDetails || !customerId || !deadline || !userId || !companyId || !status || !priority || !estimatedCost || !comments) {
         throw new Error('Required fields are missing.');
     }
 
     try {
         jobDetails = await validateJobDetails(jobDetails, jobTypeModel);
         const orderId = await generateNextOrderId();
-        const job = await jobModel.create({ companyId,customerId,quantity,userId,orderId ,jobDetails,deadline,status,priority,requirements,comments,estimatedCost});
+        const job = await jobModel.create({ companyId, customerId, quantity, userId, orderId, jobDetails, deadline, status, priority, requirements, comments, estimatedCost });
         return job;
     } catch (err) {
-        throw new Error('Error saving job to database.',err);
+        throw new Error('Error saving job to database.', err);
     }
 }
 
 
-module.exports.getAllJobs= async (companyId) => {
-    return await jobModel.find({companyId: companyId}).populate('customerId', 'customerName customerCompanyName');
+module.exports.getAllJobs = async (companyId) => {
+    return await jobModel.find({ companyId: companyId }).populate('customerId', 'customerName customerCompanyName');
 };
 
-module.exports.getProductionJobs= async (companyId) => {
+module.exports.getProductionJobs = async (companyId) => {
     const companyIdNew = new mongoose.Types.ObjectId(companyId);
-    return await jobModel.find({companyId: companyIdNew,status: 'production'}).populate('customerId', 'customerName customerCompanyName');
+    return await jobModel.find({ companyId: companyIdNew, status: 'production' }).populate('customerId', 'customerName customerCompanyName');
 };
 
 module.exports.getJobById = async (id) => {
@@ -41,25 +41,25 @@ module.exports.getJobCountByCustomerId = async (customerId) => {
 };
 
 async function generateNextOrderId() {
-  try {
-    const today = new Date();
-    const year = today.getFullYear();
-    const month = String(today.getMonth() + 1).padStart(2, '0');
-    const day = String(today.getDate()).padStart(2, '0');
-    const dateString = `${year}${month}${day}`;
-    const result = await counters.findOneAndUpdate(
-      { _id: dateString },
-      { $inc: { sequence_value: 1 } },
-      { upsert: true, returnDocument: 'after' }
-    );
-    const sequenceNumber = result.sequence_value;
-    const formattedSequence = String(sequenceNumber).padStart(5, '0');
-    
-    const orderId = `${dateString}${formattedSequence}`;
-    return orderId;
-  } catch (err) {
-    throw new Error('Error generating order ID',err);
-  }
+    try {
+        const today = new Date();
+        const year = today.getFullYear();
+        const month = String(today.getMonth() + 1).padStart(2, '0');
+        const day = String(today.getDate()).padStart(2, '0');
+        const dateString = `${year}${month}${day}`;
+        const result = await counters.findOneAndUpdate(
+            { _id: dateString },
+            { $inc: { sequence_value: 1 } },
+            { upsert: true, returnDocument: 'after' }
+        );
+        const sequenceNumber = result.sequence_value;
+        const formattedSequence = String(sequenceNumber).padStart(5, '0');
+
+        const orderId = `${dateString}${formattedSequence}`;
+        return orderId;
+    } catch (err) {
+        throw new Error('Error generating order ID', err);
+    }
 }
 
 async function validateJobDetails(userJobDetails, jobTypeSchema) {
@@ -82,7 +82,7 @@ async function validateJobDetails(userJobDetails, jobTypeSchema) {
             throw new Error(`Invalid job type: ${detail.type}.`);
         }
         const subTypeMatch = jobTypeDocument.type.find(t => t.name === detail.subType);
-        
+
         if (!subTypeMatch) {
             throw new Error(`Invalid job sub-type: ${detail.type} for main type ${jobTypeSchema.name}.`);
         }
@@ -91,7 +91,7 @@ async function validateJobDetails(userJobDetails, jobTypeSchema) {
         if (subTypeMatch.fields) {
             allRequiredFields.push(...subTypeMatch.fields);
         }
-        
+
 
         for (const fieldSchema of allRequiredFields) {
             const fieldName = fieldSchema.name;
@@ -102,15 +102,16 @@ async function validateJobDetails(userJobDetails, jobTypeSchema) {
             }
 
             if (userValue && fieldSchema.values.length > 0) {
-                if (!fieldSchema.values.includes(userValue)) {
+                // Allow custom input values if the field supports it
+                if (!fieldSchema.allowsCustomInput && !fieldSchema.values.includes(userValue)) {
                     throw new Error(`Invalid value '${userValue}' for field '${fieldName}' in job type '${detail.type}'. Must be one of: ${fieldSchema.values.join(', ')}.`);
                 }
             }
         }
-        
+
         validDetails.push({
             type: detail.type,
-            subType: detail.subType, 
+            subType: detail.subType,
             fields: detail.fields,
         });
     }

@@ -6,8 +6,8 @@ require('dotenv').config();
 const mongoose = require('mongoose');
 const quoteModel = require('../models/quoteModel');
 
-const QUOTE_ID = '696ceb6a02a06787656d7980';
-const NEW_STATUS = 'draft';
+const QUOTE_ID = '696d0c6166bbb12b5595bc21';
+const NEW_STATUS = 'sent';
 
 async function updateQuote() {
   try {
