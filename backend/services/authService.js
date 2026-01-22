@@ -21,36 +21,36 @@ module.exports.login = async (email, password) => {
         isSuperAdmin: user.isSuperAdmin
     };
 
-    const token = jwt.sign(payload, process.env.JWT, { expiresIn: '24h' });
+    const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '24h' });
 
     const company = await Company.findOne({ _id: user.companyId });
     if (!company) {
         throw new Error('Company not found.');
     }
-    console.log("company details",company);
+    console.log("company details", company);
 
-    const response = { 
-        token : token ,
-        user : {
+    const response = {
+        token: token,
+        user: {
             "name": user.name,
             "email": user.email,
-            "role": user.role,   
+            "role": user.role,
             "isSuperAdmin": user.isSuperAdmin,
             "userId": user._id
-        }, 
-        company : {
+        },
+        company: {
             "companyName": company.companyName,
             "companyEmail": company.companyEmail,
             "currency": company.currency,
-            "timezone" : company.timezone,
-            "logoUrl" : company.logoUrl,
+            "timezone": company.timezone,
+            "logoUrl": company.logoUrl,
             "alertSettings": company.alertSettings,
             "companyId": company._id
-        } 
+        }
     };
 
-    await redisClient.setEx(`auth:${user._id}`,86400,JSON.stringify(response));
-    
+    await redisClient.setEx(`auth:${user._id}`, 86400, JSON.stringify(response));
+
     console.log('User from Redis:', await redisClient.get(`auth:${user._id}`));
     return response;
 };

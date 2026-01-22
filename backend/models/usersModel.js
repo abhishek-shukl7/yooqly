@@ -25,7 +25,7 @@ userSchema.methods.generateAuthToken = function () {
         companyId: this.companyId,
         role: this.role,
         isSuperAdmin: this.isSuperAdmin
-    }, process.env.JWT, { expiresIn: '24h' });
+    }, process.env.JWT_SECRET, { expiresIn: '24h' });
     return token;
 }
 

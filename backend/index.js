@@ -30,7 +30,7 @@ const currencyRoutes = require('./routes/currencyRoutes');
 const test = require('./routes/test');
 
 // Validate environment variables
-const requiredEnvVars = ['PORT', 'MONGO_URI', 'JWT', 'REDIS_URL'];
+const requiredEnvVars = ['PORT', 'MONGO_URI', 'JWT_SECRET', 'REDIS_URL'];
 for (const envVar of requiredEnvVars) {
   if (!process.env[envVar]) {
     console.error(`Missing required environment variable: ${envVar}`);

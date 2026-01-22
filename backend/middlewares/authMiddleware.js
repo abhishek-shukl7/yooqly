@@ -5,7 +5,7 @@ const Company = require('../models/companyModel');
 
 function verifyToken(token) {
   try {
-    const decoded = jwt.verify(token, process.env.JWT);
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
     return { valid: true, expired: false, decoded };
   } catch (error) {
     if (error.name === "TokenExpiredError") {
@@ -121,7 +121,7 @@ module.exports = { checkAdmin };
 //     if(!token){
 //         return res.status(401).json({ message : 'Unauthorized token' });
 //     }
-//     const decoded = jwt.verify(token,process.env.JWT);
+//     const decoded = jwt.verify(token,process.env.JWT_SECRET);
 
 //     if (decoded.isSuperAdmin) {
 //         return next();

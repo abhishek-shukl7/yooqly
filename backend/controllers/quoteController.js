@@ -135,7 +135,7 @@ module.exports.processQuoteResponse = async (req, res) => {
     if (!token) return res.status(400).send(renderStyledPage('Invalid Link', '<h1>Invalid Link</h1><p>The link you used is invalid or missing a token.</p>', '#ef4444'));
 
     try {
-        const decoded = jwt.verify(token, process.env.JWT_SECRET || 'secret_key');
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
         const { quoteId, action, type } = decoded;
 
         // Security Check: Token Scope
@@ -293,7 +293,7 @@ module.exports.getAllQuotes = async (req, res) => {
 // Send quote email with currency symbol
 async function sendQuoteEmail(quoteId, quoteDetails, toEmail, currencySymbol = '£') {
     // Generate Magic Links
-    const secret = process.env.JWT_SECRET || 'secret_key';
+    const secret = process.env.JWT_SECRET;
     const baseUrl = process.env.API_BASE_URL || 'http://localhost:3001';
 
     const approveToken = jwt.sign({ quoteId, action: 'approved', type: 'quote_approval' }, secret, { expiresIn: '2d' });
