@@ -36,33 +36,33 @@ module.exports.onboardClient = async (token, companyData, userData) => {
     await OnboardingToken.findByIdAndDelete(onboardingToken._id);
 
     const payload = {
-            userId: newUser._id,
-            companyId: newUser.companyId,
-            role: newUser.role,
-            isSuperAdmin: newUser.isSuperAdmin
-        };
-    
-    const authToken = jwt.sign(payload, process.env.JWT, { expiresIn: '24h' });
+        userId: newUser._id,
+        companyId: newUser.companyId,
+        role: newUser.role,
+        isSuperAdmin: newUser.isSuperAdmin
+    };
 
-    const response = { 
-        token : authToken ,
-        user : {
+    const authToken = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '24h' });
+
+    const response = {
+        token: authToken,
+        user: {
             "name": newUser.name,
             "email": newUser.email,
-            "role": newUser.role,   
+            "role": newUser.role,
             "isSuperAdmin": newUser.isSuperAdmin,
-        }, 
-        company : {
+        },
+        company: {
             "companyName": newCompany.companyName,
             "companyEmail": newCompany.companyEmail,
             "currency": newCompany.currency,
-            "timezone" : newCompany.timezone,
-            "logoUrl" : newCompany.logoUrl,
+            "timezone": newCompany.timezone,
+            "logoUrl": newCompany.logoUrl,
             "alertSettings": newCompany.alertSettings,
-        } 
+        }
     };
 
-    await redisClient.setEx(`auth:${newUser._id}`,86400,JSON.stringify(response));
+    await redisClient.setEx(`auth:${newUser._id}`, 86400, JSON.stringify(response));
 
     return response;
 };
