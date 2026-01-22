@@ -9,10 +9,21 @@ module.exports.createQuote = async ({ companyId, userId, customerId, jobId, orde
     }
 
     try {
+        // Check if a quote already exists for this job
+        const existingQuote = await quoteModel.findOne({ jobId });
+        if (existingQuote) {
+            throw new Error('Quote already exists for this job.');
+        }
 
         let quoteItem = await validateJobDetails(quoteItems, jobTypeModel);
 
         const quote = await quoteModel.create({ companyId, userId, customerId, jobId, orderId, tax, terms, requirements, quoteTotal, quoteItems: quoteItem, quoteDeadline, status });
+
+        // If quote is draft, set job status to 'On Hold'
+        if (status === 'draft') {
+            await jobModel.findByIdAndUpdate(jobId, { status: 'On Hold' });
+        }
+
         return quote;
     } catch (err) {
         console.log(err);
@@ -66,11 +77,33 @@ module.exports.quoteApproval = async (id, status) => {
             });
         }
     }
+    // If rejected, update job status to 'Cancelled'
+    if (status === 'rejected' && quoteStatus) {
+        await jobModel.findByIdAndUpdate(quoteStatus.jobId, { status: 'Cancelled' });
+    }
     return quoteStatus;
 };
 
 module.exports.updateQuote = async (id, updateData) => {
-    return await quoteModel.findByIdAndUpdate(id, updateData, { new: true, runValidators: true });
+    const updatedQuote = await quoteModel.findByIdAndUpdate(id, updateData, { new: true, runValidators: true });
+
+    // Sync job status based on quote status
+    if (updatedQuote && updateData.status) {
+        let jobStatus = null;
+        if (updateData.status === 'sent') {
+            jobStatus = 'Pending';
+        } else if (updateData.status === 'draft') {
+            jobStatus = 'On Hold';
+        } else if (updateData.status === 'rejected') {
+            jobStatus = 'Cancelled';
+        }
+
+        if (jobStatus) {
+            await jobModel.findByIdAndUpdate(updatedQuote.jobId, { status: jobStatus });
+        }
+    }
+
+    return updatedQuote;
 };
 
 // module.exports.deleteQuote = async (id) => {
